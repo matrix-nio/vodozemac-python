@@ -1,0 +1,23 @@
+[package]
+name = "vodozemac-python"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "vodozemac"
+crate-type = ["cdylib"]
+
+[dependencies]
+paste = "1.0.7"
+thiserror = "1.0.30"
+
+[package.metadata.maturin]
+name = "vodozemac"
+
+[dependencies.vodozemac]
+git = "https://github.com/matrix-org/vodozemac"
+rev = "d0e744287a14319c2a9148fef3747548c740fc36"
+
+[dependencies.pyo3]
+version = "0.16.4"
+features = ["extension-module"]
