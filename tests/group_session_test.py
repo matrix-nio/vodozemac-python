@@ -1,9 +1,15 @@
 import pytest
 
-from vodozemac import (InboundGroupSession, GroupSession, PickleException,
-                       DecodeException, MegolmDecryptionException)
+from vodozemac import (
+    InboundGroupSession,
+    GroupSession,
+    PickleException,
+    DecodeException,
+    MegolmDecryptionException,
+)
 
 PICKLE_KEY = b"DEFAULT_PICKLE_KEY_1234567890___"
+
 
 class TestClass(object):
     def test_session_create(self):
@@ -56,7 +62,7 @@ class TestClass(object):
             inbound.export_at(inbound.first_known_index)
         )
         message = imported.decrypt(outbound.encrypt("Test"))
-        assert message.plaintext == "Test" 
+        assert message.plaintext == "Test"
         assert message.message_index == 0
 
     def test_first_index(self):
@@ -111,5 +117,5 @@ class TestClass(object):
 
     def test_inbound_clear(self):
         outbound = GroupSession()
-        inbound = GroupSession(outbound.session_key)
+        inbound = InboundGroupSession(outbound.session_key)
         del inbound

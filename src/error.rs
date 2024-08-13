@@ -63,6 +63,8 @@ pub enum MegolmDecryptionError {
     Decode(#[from] vodozemac::DecodeError),
     #[error(transparent)]
     Decryption(#[from] vodozemac::megolm::DecryptionError),
+    #[error(transparent)]
+    Utf8(#[from] std::string::FromUtf8Error),
 }
 
 impl From<MegolmDecryptionError> for PyErr {
@@ -72,6 +74,7 @@ impl From<MegolmDecryptionError> for PyErr {
             MegolmDecryptionError::Decryption(e) => {
                 MegolmDecryptionException::new_err(e.to_string())
             }
+            MegolmDecryptionError::Utf8(e) => PyValueError::new_err(e.to_string()),
         }
     }
 }
@@ -108,6 +111,8 @@ pub enum SessionError {
     #[error(transparent)]
     Decryption(#[from] vodozemac::olm::DecryptionError),
     #[error(transparent)]
+    Utf8(#[from] std::string::FromUtf8Error),
+    #[error(transparent)]
     Creation(#[from] vodozemac::olm::SessionCreationError),
     #[error("Invalid message type, a pre-key message is needed to create a Session")]
     InvalidMessageType,
@@ -121,6 +126,7 @@ impl From<SessionError> for PyErr {
             SessionError::Decryption(e) => OlmDecryptionException::new_err(e.to_string()),
             SessionError::Creation(e) => SessionCreationException::new_err(e.to_string()),
             SessionError::InvalidMessageType => PyValueError::new_err(e.to_string()),
+            SessionError::Utf8(e) => PyValueError::new_err(e.to_string()),
         }
     }
 }

@@ -41,7 +41,11 @@ impl Session {
     }
 
     #[classmethod]
-    fn from_pickle(_cls: &PyType, pickle: &str, pickle_key: &[u8]) -> Result<Self, PickleError> {
+    fn from_pickle(
+        _cls: &Bound<'_, PyType>,
+        pickle: &str,
+        pickle_key: &[u8],
+    ) -> Result<Self, PickleError> {
         let pickle_key: &[u8; 32] = pickle_key
             .try_into()
             .map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
@@ -54,7 +58,7 @@ impl Session {
 
     #[classmethod]
     fn from_libolm_pickle(
-        _cls: &PyType,
+        _cls: &Bound<'_, PyType>,
         pickle: &str,
         pickle_key: &[u8],
     ) -> Result<Self, LibolmPickleError> {
@@ -78,6 +82,6 @@ impl Session {
         let message =
             vodozemac::olm::OlmMessage::from_parts(message.message_type, &message.ciphertext)?;
 
-        Ok(self.inner.decrypt(&message)?)
+        Ok(String::from_utf8(self.inner.decrypt(&message)?)?)
     }
 }
