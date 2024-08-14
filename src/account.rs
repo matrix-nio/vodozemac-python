@@ -4,7 +4,7 @@ use pyo3::{prelude::*, types::PyType};
 use vodozemac::olm::SessionConfig;
 
 use crate::{
-    error::{KeyError, LibolmPickleError, PickleError, SessionError},
+    error::{LibolmPickleError, PickleError, SessionError},
     types::{Curve25519PublicKey, Ed25519PublicKey, Ed25519Signature},
 };
 
