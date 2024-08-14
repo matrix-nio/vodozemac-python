@@ -3,6 +3,7 @@ mod error;
 mod group_sessions;
 mod sas;
 mod session;
+mod types;
 
 use error::*;
 use pyo3::prelude::*;
@@ -34,6 +35,9 @@ fn my_module(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<sas::Sas>()?;
     m.add_class::<group_sessions::GroupSession>()?;
     m.add_class::<group_sessions::InboundGroupSession>()?;
+
+    m.add_class::<types::Ed25519PublicKey>()?;
+    m.add_class::<types::Curve25519PublicKey>()?;
 
     m.add("KeyException", py.get_type_bound::<KeyException>())?;
     m.add("DecodeException", py.get_type_bound::<DecodeException>())?;
