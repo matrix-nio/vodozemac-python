@@ -115,8 +115,6 @@ pub enum SessionError {
     Utf8(#[from] std::string::FromUtf8Error),
     #[error(transparent)]
     Creation(#[from] vodozemac::olm::SessionCreationError),
-    #[error("Invalid message type, a pre-key message is needed to create a Session")]
-    InvalidMessageType,
 }
 
 impl From<SessionError> for PyErr {
@@ -126,7 +124,6 @@ impl From<SessionError> for PyErr {
             SessionError::Decode(e) => DecodeException::new_err(e.to_string()),
             SessionError::Decryption(e) => OlmDecryptionException::new_err(e.to_string()),
             SessionError::Creation(e) => SessionCreationException::new_err(e.to_string()),
-            SessionError::InvalidMessageType => PyValueError::new_err(e.to_string()),
             SessionError::Utf8(e) => PyValueError::new_err(e.to_string()),
         }
     }
