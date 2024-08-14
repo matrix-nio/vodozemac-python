@@ -33,8 +33,11 @@ fn my_module(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<session::Session>()?;
     m.add_class::<OlmMessage>()?;
     m.add_class::<sas::Sas>()?;
+
     m.add_class::<group_sessions::GroupSession>()?;
     m.add_class::<group_sessions::InboundGroupSession>()?;
+    m.add_class::<types::SessionKey>()?;
+    m.add_class::<types::ExportedSessionKey>()?;
 
     m.add_class::<types::Ed25519PublicKey>()?;
     m.add_class::<types::Ed25519Signature>()?;
