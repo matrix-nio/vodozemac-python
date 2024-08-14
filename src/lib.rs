@@ -26,9 +26,8 @@ impl OlmMessage {
     }
 }
 
-#[pymodule]
-#[pyo3(name = "vodozemac")]
-fn mymodule(py: Python, m: &PyModule) -> PyResult<()> {
+#[pymodule(name = "vodozemac")]
+fn my_module(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<account::Account>()?;
     m.add_class::<session::Session>()?;
     m.add_class::<OlmMessage>()?;
@@ -36,29 +35,29 @@ fn mymodule(py: Python, m: &PyModule) -> PyResult<()> {
     m.add_class::<group_sessions::GroupSession>()?;
     m.add_class::<group_sessions::InboundGroupSession>()?;
 
-    m.add("KeyException", py.get_type::<KeyException>())?;
-    m.add("DecodeException", py.get_type::<DecodeException>())?;
+    m.add("KeyException", py.get_type_bound::<KeyException>())?;
+    m.add("DecodeException", py.get_type_bound::<DecodeException>())?;
     m.add(
         "LibolmPickleException",
-        py.get_type::<LibolmPickleException>(),
+        py.get_type_bound::<LibolmPickleException>(),
     )?;
     m.add(
         "SessionKeyDecodeException",
-        py.get_type::<SessionKeyDecodeException>(),
+        py.get_type_bound::<SessionKeyDecodeException>(),
     )?;
-    m.add("PickleException", py.get_type::<PickleException>())?;
+    m.add("PickleException", py.get_type_bound::<PickleException>())?;
     m.add(
         "SessionCreationException",
-        py.get_type::<SessionCreationException>(),
+        py.get_type_bound::<SessionCreationException>(),
     )?;
-    m.add("SasException", py.get_type::<SasException>())?;
+    m.add("SasException", py.get_type_bound::<SasException>())?;
     m.add(
         "OlmDecryptionException",
-        py.get_type::<OlmDecryptionException>(),
+        py.get_type_bound::<OlmDecryptionException>(),
     )?;
     m.add(
         "MegolmDecryptionException",
-        py.get_type::<MegolmDecryptionException>(),
+        py.get_type_bound::<MegolmDecryptionException>(),
     )?;
 
     Ok(())

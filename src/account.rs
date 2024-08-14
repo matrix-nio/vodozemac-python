@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 
 use pyo3::{prelude::*, types::PyType};
+use vodozemac::olm::SessionConfig;
 
 use crate::error::{KeyError, LibolmPickleError, PickleError, SessionError};
 
@@ -21,7 +22,11 @@ impl Account {
     }
 
     #[classmethod]
-    fn from_pickle(_cls: &PyType, pickle: &str, pickle_key: &[u8]) -> Result<Self, PickleError> {
+    fn from_pickle(
+        _cls: &Bound<'_, PyType>,
+        pickle: &str,
+        pickle_key: &[u8],
+    ) -> Result<Self, PickleError> {
         let pickle_key: &[u8; 32] = pickle_key
             .try_into()
             .map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
@@ -35,7 +40,7 @@ impl Account {
 
     #[classmethod]
     fn from_libolm_pickle(
-        _cls: &PyType,
+        _cls: &Bound<'_, PyType>,
         pickle: &str,
         pickle_key: &[u8],
     ) -> Result<Self, LibolmPickleError> {
@@ -81,7 +86,7 @@ impl Account {
     }
 
     fn generate_one_time_keys(&mut self, count: usize) {
-        self.inner.generate_one_time_keys(count)
+        self.inner.generate_one_time_keys(count);
     }
 
     #[getter]
@@ -94,7 +99,7 @@ impl Account {
     }
 
     fn generate_fallback_key(&mut self) {
-        self.inner.generate_fallback_key()
+        self.inner.generate_fallback_key();
     }
 
     fn mark_keys_as_published(&mut self) {
@@ -109,9 +114,11 @@ impl Account {
         let identity_key = vodozemac::Curve25519PublicKey::from_base64(identity_key)?;
         let one_time_key = vodozemac::Curve25519PublicKey::from_base64(one_time_key)?;
 
-        let session = self
-            .inner
-            .create_outbound_session(identity_key, one_time_key);
+        let session = self.inner.create_outbound_session(
+            SessionConfig::version_1(),
+            identity_key,
+            one_time_key,
+        );
 
         Ok(Session { inner: session })
     }
@@ -133,7 +140,7 @@ impl Account {
                 Session {
                     inner: result.session,
                 },
-                result.plaintext,
+                String::from_utf8(result.plaintext)?,
             ))
         } else {
             Err(SessionError::InvalidMessageType)

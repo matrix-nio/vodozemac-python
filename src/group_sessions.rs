@@ -1,5 +1,5 @@
 use pyo3::{prelude::*, types::PyType};
-use vodozemac::megolm::{ExportedSessionKey, MegolmMessage, SessionKey};
+use vodozemac::megolm::{ExportedSessionKey, MegolmMessage, SessionConfig, SessionKey};
 
 use crate::error::{LibolmPickleError, MegolmDecryptionError, PickleError, SessionKeyDecodeError};
 
@@ -13,7 +13,7 @@ impl GroupSession {
     #[new]
     fn new() -> Self {
         Self {
-            inner: vodozemac::megolm::GroupSession::new(),
+            inner: vodozemac::megolm::GroupSession::new(SessionConfig::version_1()),
         }
     }
 
@@ -45,7 +45,11 @@ impl GroupSession {
     }
 
     #[classmethod]
-    fn from_pickle(_cls: &PyType, pickle: &str, pickle_key: &[u8]) -> Result<Self, PickleError> {
+    fn from_pickle(
+        _cls: &Bound<'_, PyType>,
+        pickle: &str,
+        pickle_key: &[u8],
+    ) -> Result<Self, PickleError> {
         let pickle_key: &[u8; 32] = pickle_key
             .try_into()
             .map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
@@ -77,16 +81,19 @@ impl InboundGroupSession {
         let key = SessionKey::from_base64(session_key)?;
 
         Ok(Self {
-            inner: vodozemac::megolm::InboundGroupSession::new(&key),
+            inner: vodozemac::megolm::InboundGroupSession::new(&key, SessionConfig::version_1()),
         })
     }
 
     #[classmethod]
-    fn import_session(_cls: &PyType, session_key: &str) -> Result<Self, SessionKeyDecodeError> {
+    fn import_session(
+        _cls: &Bound<'_, PyType>,
+        session_key: &str,
+    ) -> Result<Self, SessionKeyDecodeError> {
         let key = ExportedSessionKey::from_base64(session_key)?;
 
         Ok(Self {
-            inner: vodozemac::megolm::InboundGroupSession::import(&key),
+            inner: vodozemac::megolm::InboundGroupSession::import(&key, SessionConfig::version_1()),
         })
     }
 
@@ -109,7 +116,7 @@ impl InboundGroupSession {
         let ret = self.inner.decrypt(&message)?;
 
         Ok(DecryptedMessage {
-            plaintext: ret.plaintext,
+            plaintext: String::from_utf8(ret.plaintext)?,
             message_index: ret.message_index,
         })
     }
@@ -123,7 +130,11 @@ impl InboundGroupSession {
     }
 
     #[classmethod]
-    fn from_pickle(_cls: &PyType, pickle: &str, pickle_key: &[u8]) -> Result<Self, PickleError> {
+    fn from_pickle(
+        _cls: &Bound<'_, PyType>,
+        pickle: &str,
+        pickle_key: &[u8],
+    ) -> Result<Self, PickleError> {
         let pickle_key: &[u8; 32] = pickle_key
             .try_into()
             .map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
@@ -137,7 +148,7 @@ impl InboundGroupSession {
 
     #[classmethod]
     fn from_libolm_pickle(
-        _cls: &PyType,
+        _cls: &Bound<'_, PyType>,
         pickle: &str,
         pickle_key: &[u8],
     ) -> Result<Self, LibolmPickleError> {
