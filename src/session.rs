@@ -1,8 +1,9 @@
 use pyo3::{prelude::*, types::PyType};
 
-use crate::{LibolmPickleError, PickleError, SessionError};
-
-use super::OlmMessage;
+use crate::{
+    types::{AnyOlmMessage, PreKeyMessage},
+    LibolmPickleError, PickleError, SessionError,
+};
 
 #[pyclass]
 pub struct Session {
@@ -24,20 +25,8 @@ impl Session {
         Ok(self.inner.pickle().encrypt(pickle_key))
     }
 
-    fn session_matches(&self, message: &OlmMessage) -> bool {
-        let message =
-            vodozemac::olm::OlmMessage::from_parts(message.message_type, &message.ciphertext);
-
-        match message {
-            Ok(m) => {
-                if let vodozemac::olm::OlmMessage::PreKey(m) = m {
-                    self.inner.session_keys() == m.session_keys()
-                } else {
-                    false
-                }
-            }
-            Err(_) => false,
-        }
+    fn session_matches(&self, message: &PreKeyMessage) -> bool {
+        self.inner.session_keys() == message.inner.session_keys()
     }
 
     #[classmethod]
@@ -67,21 +56,12 @@ impl Session {
         Ok(Self { inner: session })
     }
 
-    fn encrypt(&mut self, plaintext: &str) -> OlmMessage {
+    fn encrypt(&mut self, plaintext: &str) -> AnyOlmMessage {
         let message = self.inner.encrypt(plaintext);
-
-        let (message_type, ciphertext) = message.to_parts();
-
-        OlmMessage {
-            ciphertext,
-            message_type,
-        }
+        AnyOlmMessage { inner: message }
     }
 
-    fn decrypt(&mut self, message: &OlmMessage) -> Result<String, SessionError> {
-        let message =
-            vodozemac::olm::OlmMessage::from_parts(message.message_type, &message.ciphertext)?;
-
-        Ok(String::from_utf8(self.inner.decrypt(&message)?)?)
+    fn decrypt(&mut self, message: &AnyOlmMessage) -> Result<String, SessionError> {
+        Ok(String::from_utf8(self.inner.decrypt(&message.inner)?)?)
     }
 }

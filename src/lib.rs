@@ -8,30 +8,13 @@ mod types;
 use error::*;
 use pyo3::prelude::*;
 
-#[pyclass]
-pub struct OlmMessage {
-    #[pyo3(get)]
-    ciphertext: String,
-    #[pyo3(get)]
-    message_type: usize,
-}
-
-#[pymethods]
-impl OlmMessage {
-    #[new]
-    pub fn new(message_type: usize, ciphertext: &str) -> Self {
-        Self {
-            ciphertext: ciphertext.to_owned(),
-            message_type,
-        }
-    }
-}
-
 #[pymodule(name = "vodozemac")]
 fn my_module(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<account::Account>()?;
     m.add_class::<session::Session>()?;
-    m.add_class::<OlmMessage>()?;
+    m.add_class::<types::AnyOlmMessage>()?;
+    m.add_class::<types::PreKeyMessage>()?;
+
     m.add_class::<sas::Sas>()?;
 
     m.add_class::<group_sessions::GroupSession>()?;
