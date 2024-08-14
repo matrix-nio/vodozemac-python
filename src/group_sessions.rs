@@ -1,7 +1,10 @@
 use pyo3::{prelude::*, types::PyType};
-use vodozemac::megolm::{ExportedSessionKey, MegolmMessage, SessionConfig, SessionKey};
+use vodozemac::megolm::{MegolmMessage, SessionConfig};
 
-use crate::error::{LibolmPickleError, MegolmDecryptionError, PickleError, SessionKeyDecodeError};
+use crate::{
+    error::{LibolmPickleError, MegolmDecryptionError, PickleError, SessionKeyDecodeError},
+    types::{ExportedSessionKey, SessionKey},
+};
 
 #[pyclass]
 pub struct GroupSession {
@@ -28,8 +31,8 @@ impl GroupSession {
     }
 
     #[getter]
-    fn session_key(&self) -> String {
-        self.inner.session_key().to_base64()
+    fn session_key(&self) -> SessionKey {
+        self.inner.session_key().into()
     }
 
     fn encrypt(&mut self, plaintext: &str) -> String {
@@ -77,23 +80,25 @@ pub struct InboundGroupSession {
 #[pymethods]
 impl InboundGroupSession {
     #[new]
-    fn new(session_key: &str) -> Result<Self, SessionKeyDecodeError> {
-        let key = SessionKey::from_base64(session_key)?;
-
+    fn new(session_key: &SessionKey) -> Result<Self, SessionKeyDecodeError> {
         Ok(Self {
-            inner: vodozemac::megolm::InboundGroupSession::new(&key, SessionConfig::version_1()),
+            inner: vodozemac::megolm::InboundGroupSession::new(
+                &session_key.inner,
+                SessionConfig::version_1(),
+            ),
         })
     }
 
     #[classmethod]
     fn import_session(
         _cls: &Bound<'_, PyType>,
-        session_key: &str,
+        session_key: &ExportedSessionKey,
     ) -> Result<Self, SessionKeyDecodeError> {
-        let key = ExportedSessionKey::from_base64(session_key)?;
-
         Ok(Self {
-            inner: vodozemac::megolm::InboundGroupSession::import(&key, SessionConfig::version_1()),
+            inner: vodozemac::megolm::InboundGroupSession::import(
+                &session_key.inner,
+                SessionConfig::version_1(),
+            ),
         })
     }
 
@@ -107,8 +112,8 @@ impl InboundGroupSession {
         self.inner.first_known_index()
     }
 
-    fn export_at(&mut self, index: u32) -> Option<String> {
-        self.inner.export_at(index).map(|k| k.to_base64())
+    fn export_at(&mut self, index: u32) -> Option<ExportedSessionKey> {
+        self.inner.export_at(index).map(|k| k.into())
     }
 
     fn decrypt(&mut self, ciphertext: &str) -> Result<DecryptedMessage, MegolmDecryptionError> {
