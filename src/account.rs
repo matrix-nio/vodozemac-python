@@ -5,10 +5,10 @@ use vodozemac::olm::SessionConfig;
 
 use crate::{
     error::{LibolmPickleError, PickleError, SessionError},
-    types::{Curve25519PublicKey, Ed25519PublicKey, Ed25519Signature},
+    types::{Curve25519PublicKey, Ed25519PublicKey, Ed25519Signature, PreKeyMessage},
 };
 
-use super::{session::Session, OlmMessage};
+use super::session::Session;
 
 #[pyclass]
 pub struct Account {
@@ -126,24 +126,17 @@ impl Account {
     fn create_inbound_session(
         &mut self,
         identity_key: &Curve25519PublicKey,
-        message: &OlmMessage,
+        message: &PreKeyMessage,
     ) -> Result<(Session, String), SessionError> {
-        let message =
-            vodozemac::olm::OlmMessage::from_parts(message.message_type, &message.ciphertext)?;
+        let result = self
+            .inner
+            .create_inbound_session(identity_key.inner, &message.inner)?;
 
-        if let vodozemac::olm::OlmMessage::PreKey(message) = message {
-            let result = self
-                .inner
-                .create_inbound_session(identity_key.inner, &message)?;
-
-            Ok((
-                Session {
-                    inner: result.session,
-                },
-                String::from_utf8(result.plaintext)?,
-            ))
-        } else {
-            Err(SessionError::InvalidMessageType)
-        }
+        Ok((
+            Session {
+                inner: result.session,
+            },
+            String::from_utf8(result.plaintext)?,
+        ))
     }
 }

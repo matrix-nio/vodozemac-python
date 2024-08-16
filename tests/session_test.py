@@ -2,10 +2,10 @@ import pytest
 
 from vodozemac import (
     Account,
+    AnyOlmMessage,
     DecodeException,
     Session,
     PickleException,
-    OlmMessage,
     KeyException,
 )
 
@@ -59,7 +59,8 @@ class TestClass(object):
         alice, bob, session = self._create_session()
         message = session.encrypt(plaintext)
 
-        assert message.message_type == 0
+        message = message.to_pre_key()
+        assert message != None
 
         (bob_session, decrypted) = bob.create_inbound_session(
             alice.curve25519_key, message
@@ -67,16 +68,14 @@ class TestClass(object):
         assert plaintext == decrypted
 
     def test_empty_message(self):
-        message = OlmMessage(0, "x")
-        alice, bob, session = self._create_session()
-
         with pytest.raises(DecodeException):
-            session.decrypt(message)
+            AnyOlmMessage.from_parts(0, "x")
 
     def test_two_messages(self):
         plaintext = "It's a secret to everybody"
         alice, bob, session = self._create_session()
         message = session.encrypt(plaintext)
+        message = message.to_pre_key()
 
         (bob_session, decrypted) = bob.create_inbound_session(
             alice.curve25519_key, message
@@ -92,6 +91,7 @@ class TestClass(object):
         plaintext = "It's a secret to everybody"
         alice, bob, session = self._create_session()
         message = session.encrypt(plaintext)
+        message = message.to_pre_key()
 
         (bob_session, decrypted) = bob.create_inbound_session(
             alice.curve25519_key, message
@@ -99,25 +99,24 @@ class TestClass(object):
         assert plaintext == decrypted
 
         message2 = session.encrypt("Hey! Listen!")
+        message2 = message2.to_pre_key()
 
         assert bob_session.session_matches(message2) is True
 
     def test_invalid(self):
         alice, bob, session = self._create_session()
+        _, _, another_session = self._create_session()
 
-        message = OlmMessage(0, "x")
+        message = another_session.encrypt("It's a secret to everybody")
+        message = message.to_pre_key()
+
         assert not session.session_matches(message)
-
-        message = OlmMessage(1, "x")
-        assert not session.session_matches(message)
-
-        with pytest.raises(DecodeException):
-            bob.create_inbound_session(alice.curve25519_key, message)
 
     def test_does_not_match(self):
         plaintext = "It's a secret to everybody"
         alice, bob, session = self._create_session()
         message = session.encrypt(plaintext)
+        message = message.to_pre_key()
 
         (bob_session, decrypted) = bob.create_inbound_session(
             alice.curve25519_key, message
@@ -126,4 +125,21 @@ class TestClass(object):
         _, _, new_session = self._create_session()
 
         new_message = new_session.encrypt(plaintext)
+        new_message = new_message.to_pre_key()
         assert bob_session.session_matches(new_message) is False
+
+    def test_message_to_parts(self):
+        plaintext = "It's a secret to everybody"
+        alice, bob, session = self._create_session()
+        message = session.encrypt(plaintext)
+
+        (message_type, ciphertext) = message.to_parts()
+
+        message = AnyOlmMessage.from_parts(message_type, ciphertext)
+        message = message.to_pre_key()
+
+        (bob_session, decrypted) = bob.create_inbound_session(
+            alice.curve25519_key, message
+        )
+
+        assert plaintext == decrypted
