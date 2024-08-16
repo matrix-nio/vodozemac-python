@@ -9,9 +9,9 @@ pub struct Ed25519PublicKey {
 #[pymethods]
 impl Ed25519PublicKey {
     #[classmethod]
-    pub fn from_base64(_cls: &Bound<'_, PyType>, key: &str) -> Result<Self, SessionKeyDecodeError> {
+    pub fn from_base64(_cls: &Bound<'_, PyType>, key: &str) -> Result<Self, KeyError> {
         Ok(Self {
-            inner: vodozemac::Ed25519PublicKey::from_base64(key).unwrap(),
+            inner: vodozemac::Ed25519PublicKey::from_base64(key)?,
         })
     }
 
@@ -23,10 +23,8 @@ impl Ed25519PublicKey {
         &self,
         message: &str,
         signature: &Ed25519Signature,
-    ) -> Result<(), KeyError> {
-        self.inner
-            .verify(message.as_bytes(), &signature.inner)
-            .unwrap();
+    ) -> Result<(), SignatureError> {
+        self.inner.verify(message.as_bytes(), &signature.inner)?;
 
         Ok(())
     }
@@ -56,9 +54,9 @@ impl Ed25519Signature {
     pub fn from_base64(
         _cls: &Bound<'_, PyType>,
         session_key: &str,
-    ) -> Result<Self, SessionKeyDecodeError> {
+    ) -> Result<Self, SignatureError> {
         Ok(Self {
-            inner: vodozemac::Ed25519Signature::from_base64(session_key).unwrap(),
+            inner: vodozemac::Ed25519Signature::from_base64(session_key)?,
         })
     }
 

@@ -35,6 +35,7 @@ macro_rules! create_error {
 }
 
 create_error!(vodozemac::KeyError, Key);
+create_error!(vodozemac::SignatureError, Signature);
 create_error!(vodozemac::LibolmPickleError, LibolmPickle);
 create_error!(vodozemac::megolm::SessionKeyDecodeError, SessionKeyDecode);
 

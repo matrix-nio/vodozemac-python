@@ -16,9 +16,9 @@ impl From<vodozemac::Curve25519PublicKey> for Curve25519PublicKey {
 #[pymethods]
 impl Curve25519PublicKey {
     #[classmethod]
-    pub fn from_base64(_cls: &Bound<'_, PyType>, key: &str) -> Result<Self, SessionKeyDecodeError> {
+    pub fn from_base64(_cls: &Bound<'_, PyType>, key: &str) -> Result<Self, KeyError> {
         Ok(Self {
-            inner: vodozemac::Curve25519PublicKey::from_base64(key).unwrap(),
+            inner: vodozemac::Curve25519PublicKey::from_base64(key)?,
         })
     }
 
