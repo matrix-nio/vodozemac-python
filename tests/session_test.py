@@ -1,9 +1,16 @@
 import pytest
 
-from vodozemac import (Account, DecodeException, Session, PickleException,
-                       OlmMessage, KeyException)
+from vodozemac import (
+    Account,
+    DecodeException,
+    Session,
+    PickleException,
+    OlmMessage,
+    KeyException,
+)
 
 PICKLE_KEY = b"DEFAULT_PICKLE_KEY_1234567890___"
+
 
 class TestClass(object):
     def _create_session(self):
@@ -54,7 +61,9 @@ class TestClass(object):
 
         assert message.message_type == 0
 
-        (bob_session, decrypted) = bob.create_inbound_session(alice.curve25519_key, message)
+        (bob_session, decrypted) = bob.create_inbound_session(
+            alice.curve25519_key, message
+        )
         assert plaintext == decrypted
 
     def test_empty_message(self):
@@ -69,7 +78,9 @@ class TestClass(object):
         alice, bob, session = self._create_session()
         message = session.encrypt(plaintext)
 
-        (bob_session, decrypted) = bob.create_inbound_session(alice.curve25519_key, message)
+        (bob_session, decrypted) = bob.create_inbound_session(
+            alice.curve25519_key, message
+        )
         assert plaintext == decrypted
 
         bob_plaintext = "Grumble, Grumble"
@@ -82,7 +93,9 @@ class TestClass(object):
         alice, bob, session = self._create_session()
         message = session.encrypt(plaintext)
 
-        (bob_session, decrypted) = bob.create_inbound_session(alice.curve25519_key, message)
+        (bob_session, decrypted) = bob.create_inbound_session(
+            alice.curve25519_key, message
+        )
         assert plaintext == decrypted
 
         message2 = session.encrypt("Hey! Listen!")
@@ -101,15 +114,14 @@ class TestClass(object):
         with pytest.raises(DecodeException):
             bob.create_inbound_session(alice.curve25519_key, message)
 
-        with pytest.raises(KeyException):
-            alice.create_outbound_session("", "x")
-
     def test_does_not_match(self):
         plaintext = "It's a secret to everybody"
         alice, bob, session = self._create_session()
         message = session.encrypt(plaintext)
 
-        (bob_session, decrypted) = bob.create_inbound_session(alice.curve25519_key, message)
+        (bob_session, decrypted) = bob.create_inbound_session(
+            alice.curve25519_key, message
+        )
 
         _, _, new_session = self._create_session()
 

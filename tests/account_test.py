@@ -36,7 +36,7 @@ class TestClass(object):
 
         unpickled = Account.from_libolm_pickle(pickle, b"It's a secret to everybody")
 
-        assert unpickled.ed25519_key == "MEQCwaTE/gcrHaxwv06WEVy5xDA30FboFzCAtYhzmoc"
+        assert unpickled.ed25519_key.to_base64() == "MEQCwaTE/gcrHaxwv06WEVy5xDA30FboFzCAtYhzmoc"
 
     def test_invalid_pickle(self):
         with pytest.raises(PickleException):
