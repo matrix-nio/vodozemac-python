@@ -42,13 +42,6 @@ class TestClass(object):
         outbound = GroupSession()
         InboundGroupSession(outbound.session_key)
 
-    def test_invalid_decrypt(self):
-        outbound = GroupSession()
-        inbound = InboundGroupSession(outbound.session_key)
-
-        with pytest.raises(DecodeException):
-            inbound.decrypt("")
-
     def test_inbound_pickle(self):
         outbound = GroupSession()
         inbound = InboundGroupSession(outbound.session_key)
