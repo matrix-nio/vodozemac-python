@@ -37,7 +37,7 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@master
         with:
-        toolchain: stable
+          toolchain: stable
 
       - uses: Swatinem/rust-cache@v2
 
