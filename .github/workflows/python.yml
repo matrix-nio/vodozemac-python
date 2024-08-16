@@ -44,5 +44,4 @@ jobs:
       - run: python3 -m pip install nox
 
       - name: Run nox for ${{ matrix.python-version }}
-        working-directory: ./python
         run: nox -s test-${{ matrix.python-version }}
