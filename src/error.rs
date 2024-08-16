@@ -38,6 +38,7 @@ create_error!(vodozemac::KeyError, Key);
 create_error!(vodozemac::SignatureError, Signature);
 create_error!(vodozemac::LibolmPickleError, LibolmPickle);
 create_error!(vodozemac::megolm::SessionKeyDecodeError, SessionKeyDecode);
+create_error!(vodozemac::DecodeError, Decode);
 
 pyo3::create_exception!(module, PickleException, pyo3::exceptions::PyValueError);
 pyo3::create_exception!(
@@ -45,7 +46,6 @@ pyo3::create_exception!(
     SessionCreationException,
     pyo3::exceptions::PyValueError
 );
-pyo3::create_exception!(module, DecodeException, pyo3::exceptions::PyValueError);
 pyo3::create_exception!(module, SasException, pyo3::exceptions::PyValueError);
 pyo3::create_exception!(
     module,
@@ -61,8 +61,6 @@ pyo3::create_exception!(
 #[derive(Debug, Error)]
 pub enum MegolmDecryptionError {
     #[error(transparent)]
-    Decode(#[from] vodozemac::DecodeError),
-    #[error(transparent)]
     Decryption(#[from] vodozemac::megolm::DecryptionError),
     #[error(transparent)]
     Utf8(#[from] std::string::FromUtf8Error),
@@ -71,7 +69,6 @@ pub enum MegolmDecryptionError {
 impl From<MegolmDecryptionError> for PyErr {
     fn from(e: MegolmDecryptionError) -> Self {
         match e {
-            MegolmDecryptionError::Decode(e) => DecodeException::new_err(e.to_string()),
             MegolmDecryptionError::Decryption(e) => {
                 MegolmDecryptionException::new_err(e.to_string())
             }

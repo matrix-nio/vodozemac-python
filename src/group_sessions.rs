@@ -1,9 +1,9 @@
 use pyo3::{prelude::*, types::PyType};
-use vodozemac::megolm::{MegolmMessage, SessionConfig};
+use vodozemac::megolm::SessionConfig;
 
 use crate::{
     error::{LibolmPickleError, MegolmDecryptionError, PickleError, SessionKeyDecodeError},
-    types::{ExportedSessionKey, SessionKey},
+    types::{ExportedSessionKey, MegolmMessage, SessionKey},
 };
 
 #[pyclass]
@@ -35,8 +35,8 @@ impl GroupSession {
         self.inner.session_key().into()
     }
 
-    fn encrypt(&mut self, plaintext: &str) -> String {
-        self.inner.encrypt(plaintext).to_base64()
+    fn encrypt(&mut self, plaintext: &str) -> MegolmMessage {
+        self.inner.encrypt(plaintext).into()
     }
 
     fn pickle(&self, pickle_key: &[u8]) -> Result<String, PickleError> {
@@ -116,9 +116,11 @@ impl InboundGroupSession {
         self.inner.export_at(index).map(|k| k.into())
     }
 
-    fn decrypt(&mut self, ciphertext: &str) -> Result<DecryptedMessage, MegolmDecryptionError> {
-        let message = MegolmMessage::from_base64(ciphertext)?;
-        let ret = self.inner.decrypt(&message)?;
+    fn decrypt(
+        &mut self,
+        message: &MegolmMessage,
+    ) -> Result<DecryptedMessage, MegolmDecryptionError> {
+        let ret = self.inner.decrypt(&message.inner)?;
 
         Ok(DecryptedMessage {
             plaintext: String::from_utf8(ret.plaintext)?,
