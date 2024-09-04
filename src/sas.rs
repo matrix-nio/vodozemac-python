@@ -1,12 +1,11 @@
 use pyo3::prelude::*;
-use vodozemac::Curve25519PublicKey;
 
-use crate::error::SasError;
+use crate::{error::SasError, types::Curve25519PublicKey};
 
 #[pyclass]
 pub struct Sas {
     inner: Option<vodozemac::sas::Sas>,
-    public_key: String,
+    public_key: vodozemac::Curve25519PublicKey,
 }
 
 #[pymethods]
@@ -14,7 +13,7 @@ impl Sas {
     #[new]
     fn new() -> Self {
         let sas = vodozemac::sas::Sas::new();
-        let public_key = sas.public_key().to_base64();
+        let public_key = sas.public_key();
 
         Self {
             inner: Some(sas),
@@ -23,14 +22,13 @@ impl Sas {
     }
 
     #[getter]
-    fn public_key(&self) -> &str {
-        &self.public_key
+    fn public_key(&self) -> Curve25519PublicKey {
+        self.public_key.into()
     }
 
-    fn diffie_hellman(&mut self, key: &str) -> Result<EstablishedSas, SasError> {
+    fn diffie_hellman(&mut self, key: Curve25519PublicKey) -> Result<EstablishedSas, SasError> {
         if let Some(sas) = self.inner.take() {
-            let key = Curve25519PublicKey::from_base64(key)?;
-            let sas = sas.diffie_hellman(key)?;
+            let sas = sas.diffie_hellman(key.inner)?;
 
             Ok(EstablishedSas { inner: sas })
         } else {
