@@ -1,7 +1,7 @@
 import vodozemac
 import pytest
 
-from vodozemac import Account, PickleException
+from vodozemac import Account, PickleException, SignatureException
 
 PICKLE_KEY = b"DEFAULT_PICKLE_KEY_1234567890___"
 
@@ -54,3 +54,11 @@ class TestClass(object):
 
         alice.mark_keys_as_published()
         assert not alice.one_time_keys
+
+    def test_signing(self):
+        alice = Account()
+        signature = alice.sign("This is a test")
+
+        alice.ed25519_key.verify_signature("This is a test", signature)
+        with pytest.raises(SignatureException):
+            alice.ed25519_key.verify_signature("This should fail", signature)
