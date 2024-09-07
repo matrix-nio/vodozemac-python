@@ -37,9 +37,14 @@ fn my_module(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<group_sessions::InboundGroupSession>()?;
 
     m.add_class::<types::Ed25519PublicKey>()?;
+    m.add_class::<types::Ed25519Signature>()?;
     m.add_class::<types::Curve25519PublicKey>()?;
 
     m.add("KeyException", py.get_type_bound::<KeyException>())?;
+    m.add(
+        "SignatureException",
+        py.get_type_bound::<SignatureException>(),
+    )?;
     m.add("DecodeException", py.get_type_bound::<DecodeException>())?;
     m.add(
         "LibolmPickleException",
