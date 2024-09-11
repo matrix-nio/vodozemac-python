@@ -1,6 +1,7 @@
 mod account;
 mod error;
 mod group_sessions;
+mod pk_encryption;
 mod sas;
 mod session;
 mod types;
@@ -26,6 +27,11 @@ fn my_module(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<types::Ed25519PublicKey>()?;
     m.add_class::<types::Ed25519Signature>()?;
     m.add_class::<types::Curve25519PublicKey>()?;
+    m.add_class::<types::Curve25519SecretKey>()?;
+
+    m.add_class::<pk_encryption::PkDecryption>()?;
+    m.add_class::<pk_encryption::PkEncryption>()?;
+    m.add_class::<pk_encryption::Message>()?;
 
     m.add("KeyException", py.get_type_bound::<KeyException>())?;
     m.add(
@@ -54,6 +60,14 @@ fn my_module(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add(
         "MegolmDecryptionException",
         py.get_type_bound::<MegolmDecryptionException>(),
+    )?;
+    m.add(
+        "PkInvalidKeySizeException",
+        py.get_type_bound::<PkInvalidKeySizeException>(),
+    )?;
+    m.add(
+        "PkDecodeException",
+        py.get_type_bound::<PkDecodeException>(),
     )?;
 
     Ok(())

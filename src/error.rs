@@ -139,3 +139,29 @@ impl From<PickleError> for PyErr {
         PickleException::new_err(e.to_string())
     }
 }
+
+#[derive(Debug, Error)]
+pub enum PkEncryptionError {
+    #[error("The key doesn't have the correct size, got {0}, expected 32 bytes")]
+    InvalidKeySize(usize),
+    #[error(transparent)]
+    Decode(#[from] vodozemac::pk_encryption::Error),
+}
+
+pyo3::create_exception!(
+    module,
+    PkInvalidKeySizeException,
+    pyo3::exceptions::PyValueError
+);
+pyo3::create_exception!(module, PkDecodeException, pyo3::exceptions::PyValueError);
+
+impl From<PkEncryptionError> for PyErr {
+    fn from(e: PkEncryptionError) -> Self {
+        match e {
+            PkEncryptionError::InvalidKeySize(_) => {
+                PkInvalidKeySizeException::new_err(e.to_string())
+            }
+            PkEncryptionError::Decode(_) => PkDecodeException::new_err(e.to_string()),
+        }
+    }
+}
