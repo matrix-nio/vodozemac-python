@@ -21,10 +21,10 @@ impl Ed25519PublicKey {
 
     pub fn verify_signature(
         &self,
-        message: &str,
+        message: &[u8],
         signature: &Ed25519Signature,
     ) -> Result<(), SignatureError> {
-        self.inner.verify(message.as_bytes(), &signature.inner)?;
+        self.inner.verify(message, &signature.inner)?;
 
         Ok(())
     }

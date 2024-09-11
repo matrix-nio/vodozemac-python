@@ -57,8 +57,8 @@ class TestClass(object):
 
     def test_signing(self):
         alice = Account()
-        signature = alice.sign("This is a test")
+        signature = alice.sign(b"This is a test")
 
-        alice.ed25519_key.verify_signature("This is a test", signature)
+        alice.ed25519_key.verify_signature(b"This is a test", signature)
         with pytest.raises(SignatureException):
-            alice.ed25519_key.verify_signature("This should fail", signature)
+            alice.ed25519_key.verify_signature(b"This should fail", signature)

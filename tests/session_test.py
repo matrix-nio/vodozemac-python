@@ -55,7 +55,7 @@ class TestClass(object):
             Session.from_pickle(pickle, PICKLE_KEY)
 
     def test_encrypt(self):
-        plaintext = "It's a secret to everybody"
+        plaintext = b"It's a secret to everybody"
         alice, bob, session = self._create_session()
         message = session.encrypt(plaintext)
 
@@ -69,10 +69,10 @@ class TestClass(object):
 
     def test_empty_message(self):
         with pytest.raises(DecodeException):
-            AnyOlmMessage.from_parts(0, "x")
+            AnyOlmMessage.from_parts(0, b"x")
 
     def test_two_messages(self):
-        plaintext = "It's a secret to everybody"
+        plaintext = b"It's a secret to everybody"
         alice, bob, session = self._create_session()
         message = session.encrypt(plaintext)
         message = message.to_pre_key()
@@ -82,13 +82,13 @@ class TestClass(object):
         )
         assert plaintext == decrypted
 
-        bob_plaintext = "Grumble, Grumble"
+        bob_plaintext = b"Grumble, Grumble"
         bob_message = bob_session.encrypt(bob_plaintext)
 
         assert bob_plaintext == session.decrypt(bob_message)
 
     def test_matches(self):
-        plaintext = "It's a secret to everybody"
+        plaintext = b"It's a secret to everybody"
         alice, bob, session = self._create_session()
         message = session.encrypt(plaintext)
         message = message.to_pre_key()
@@ -98,7 +98,7 @@ class TestClass(object):
         )
         assert plaintext == decrypted
 
-        message2 = session.encrypt("Hey! Listen!")
+        message2 = session.encrypt(b"Hey! Listen!")
         message2 = message2.to_pre_key()
 
         assert bob_session.session_matches(message2) is True
@@ -107,13 +107,13 @@ class TestClass(object):
         alice, bob, session = self._create_session()
         _, _, another_session = self._create_session()
 
-        message = another_session.encrypt("It's a secret to everybody")
+        message = another_session.encrypt(b"It's a secret to everybody")
         message = message.to_pre_key()
 
         assert not session.session_matches(message)
 
     def test_does_not_match(self):
-        plaintext = "It's a secret to everybody"
+        plaintext = b"It's a secret to everybody"
         alice, bob, session = self._create_session()
         message = session.encrypt(plaintext)
         message = message.to_pre_key()
@@ -129,7 +129,7 @@ class TestClass(object):
         assert bob_session.session_matches(new_message) is False
 
     def test_message_to_parts(self):
-        plaintext = "It's a secret to everybody"
+        plaintext = b"It's a secret to everybody"
         alice, bob, session = self._create_session()
         message = session.encrypt(plaintext)
 

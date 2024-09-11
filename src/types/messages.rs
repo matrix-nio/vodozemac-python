@@ -1,5 +1,8 @@
-use crate::error::*;
-use pyo3::{prelude::*, types::PyType};
+use crate::{convert_to_pybytes, error::*};
+use pyo3::{
+    prelude::*,
+    types::{PyBytes, PyType},
+};
 
 #[pyclass]
 pub struct AnyOlmMessage {
@@ -9,16 +12,16 @@ pub struct AnyOlmMessage {
 #[pymethods]
 impl AnyOlmMessage {
     #[classmethod]
-    pub fn pre_key(_cls: &Bound<'_, PyType>, message: &str) -> Result<Self, SessionError> {
+    pub fn pre_key(_cls: &Bound<'_, PyType>, message: &[u8]) -> Result<Self, SessionError> {
         Ok(Self {
-            inner: vodozemac::olm::PreKeyMessage::from_base64(message)?.into(),
+            inner: vodozemac::olm::PreKeyMessage::from_bytes(message)?.into(),
         })
     }
 
     #[classmethod]
-    pub fn normal(_cls: &Bound<'_, PyType>, message: &str) -> Result<Self, SessionError> {
+    pub fn normal(_cls: &Bound<'_, PyType>, message: &[u8]) -> Result<Self, SessionError> {
         Ok(Self {
-            inner: vodozemac::olm::Message::from_base64(message)?.into(),
+            inner: vodozemac::olm::Message::from_bytes(message)?.into(),
         })
     }
 
@@ -36,15 +39,16 @@ impl AnyOlmMessage {
     pub fn from_parts(
         _cls: &Bound<'_, PyType>,
         message_type: usize,
-        ciphertext: &str,
+        ciphertext: &[u8],
     ) -> Result<Self, DecodeError> {
         Ok(Self {
             inner: vodozemac::olm::OlmMessage::from_parts(message_type, ciphertext)?,
         })
     }
 
-    pub fn to_parts(&self) -> (usize, String) {
-        self.inner.clone().to_parts()
+    pub fn to_parts(&self) -> (usize, Py<PyBytes>) {
+        let (message_type, ciphertext) = self.inner.clone().to_parts();
+        (message_type, convert_to_pybytes(ciphertext))
     }
 }
 
