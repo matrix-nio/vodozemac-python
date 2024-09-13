@@ -48,7 +48,7 @@ impl AnyOlmMessage {
 
     pub fn to_parts(&self) -> (usize, Py<PyBytes>) {
         let (message_type, ciphertext) = self.inner.clone().to_parts();
-        (message_type, convert_to_pybytes(ciphertext))
+        (message_type, convert_to_pybytes(ciphertext.as_slice()))
     }
 }
 

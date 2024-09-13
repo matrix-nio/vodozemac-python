@@ -66,6 +66,8 @@ impl Session {
     }
 
     fn decrypt(&mut self, message: &AnyOlmMessage) -> Result<Py<PyBytes>, SessionError> {
-        Ok(convert_to_pybytes(self.inner.decrypt(&message.inner)?))
+        Ok(convert_to_pybytes(
+            self.inner.decrypt(&message.inner)?.as_slice(),
+        ))
     }
 }

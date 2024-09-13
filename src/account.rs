@@ -140,7 +140,7 @@ impl Account {
             Session {
                 inner: result.session,
             },
-            convert_to_pybytes(result.plaintext),
+            convert_to_pybytes(result.plaintext.as_slice()),
         ))
     }
 }

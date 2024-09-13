@@ -59,6 +59,6 @@ fn my_module(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     Ok(())
 }
 
-pub(crate) fn convert_to_pybytes(bytes: impl AsRef<[u8]>) -> Py<PyBytes> {
-    Python::with_gil(|py| PyBytes::new_bound(py, bytes.as_ref()).into())
+pub(crate) fn convert_to_pybytes(bytes: &[u8]) -> Py<PyBytes> {
+    Python::with_gil(|py| PyBytes::new_bound(py, bytes).into())
 }
