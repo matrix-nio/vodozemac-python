@@ -1,7 +1,11 @@
-use pyo3::{prelude::*, types::PyType};
+use pyo3::{
+    prelude::*,
+    types::{PyBytes, PyType},
+};
 use vodozemac::megolm::SessionConfig;
 
 use crate::{
+    convert_to_pybytes,
     error::{LibolmPickleError, MegolmDecryptionError, PickleError, SessionKeyDecodeError},
     types::{ExportedSessionKey, MegolmMessage, SessionKey},
 };
@@ -35,7 +39,7 @@ impl GroupSession {
         self.inner.session_key().into()
     }
 
-    fn encrypt(&mut self, plaintext: &str) -> MegolmMessage {
+    fn encrypt(&mut self, plaintext: &[u8]) -> MegolmMessage {
         self.inner.encrypt(plaintext).into()
     }
 
@@ -67,9 +71,18 @@ impl GroupSession {
 #[pyclass]
 pub struct DecryptedMessage {
     #[pyo3(get)]
-    plaintext: String,
+    plaintext: Py<PyBytes>,
     #[pyo3(get)]
     message_index: u32,
+}
+
+impl DecryptedMessage {
+    fn new(plaintext: &[u8], message_index: u32) -> Self {
+        DecryptedMessage {
+            plaintext: convert_to_pybytes(plaintext),
+            message_index,
+        }
+    }
 }
 
 #[pyclass]
@@ -122,10 +135,10 @@ impl InboundGroupSession {
     ) -> Result<DecryptedMessage, MegolmDecryptionError> {
         let ret = self.inner.decrypt(&message.inner)?;
 
-        Ok(DecryptedMessage {
-            plaintext: String::from_utf8(ret.plaintext)?,
-            message_index: ret.message_index,
-        })
+        Ok(DecryptedMessage::new(
+            ret.plaintext.as_slice(),
+            ret.message_index,
+        ))
     }
 
     fn pickle(&self, pickle_key: &[u8]) -> Result<String, PickleError> {

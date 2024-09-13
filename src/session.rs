@@ -1,6 +1,10 @@
-use pyo3::{prelude::*, types::PyType};
+use pyo3::{
+    prelude::*,
+    types::{PyBytes, PyType},
+};
 
 use crate::{
+    convert_to_pybytes,
     types::{AnyOlmMessage, PreKeyMessage},
     LibolmPickleError, PickleError, SessionError,
 };
@@ -56,12 +60,14 @@ impl Session {
         Ok(Self { inner: session })
     }
 
-    fn encrypt(&mut self, plaintext: &str) -> AnyOlmMessage {
+    fn encrypt(&mut self, plaintext: &[u8]) -> AnyOlmMessage {
         let message = self.inner.encrypt(plaintext);
         AnyOlmMessage { inner: message }
     }
 
-    fn decrypt(&mut self, message: &AnyOlmMessage) -> Result<String, SessionError> {
-        Ok(String::from_utf8(self.inner.decrypt(&message.inner)?)?)
+    fn decrypt(&mut self, message: &AnyOlmMessage) -> Result<Py<PyBytes>, SessionError> {
+        Ok(convert_to_pybytes(
+            self.inner.decrypt(&message.inner)?.as_slice(),
+        ))
     }
 }

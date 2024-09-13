@@ -54,8 +54,8 @@ class TestClass(object):
         imported = InboundGroupSession.import_session(
             inbound.export_at(inbound.first_known_index)
         )
-        message = imported.decrypt(outbound.encrypt("Test"))
-        assert message.plaintext == "Test"
+        message = imported.decrypt(outbound.encrypt(b"Test"))
+        assert message.plaintext == b"Test"
         assert message.message_index == 0
 
     def test_first_index(self):
@@ -68,24 +68,24 @@ class TestClass(object):
     def test_encrypt(self):
         outbound = GroupSession()
         inbound = InboundGroupSession(outbound.session_key)
-        message = inbound.decrypt(outbound.encrypt("Test"))
-        assert "Test", 0 == inbound.decrypt(outbound.encrypt("Test"))
+        message = inbound.decrypt(outbound.encrypt(b"Test"))
+        assert b"Test", 0 == inbound.decrypt(outbound.encrypt(b"Test"))
 
     def test_decrypt_twice(self):
         outbound = GroupSession()
         inbound = InboundGroupSession(outbound.session_key)
-        outbound.encrypt("Test 1")
-        message = inbound.decrypt(outbound.encrypt("Test 2"))
+        outbound.encrypt(b"Test 1")
+        message = inbound.decrypt(outbound.encrypt(b"Test 2"))
         assert isinstance(message.message_index, int)
         assert message.message_index == 1
-        assert message.plaintext == "Test 2"
+        assert message.plaintext == b"Test 2"
 
     def test_decrypt_failure(self):
         outbound = GroupSession()
         inbound = InboundGroupSession(outbound.session_key)
         eve_outbound = GroupSession()
         with pytest.raises(MegolmDecryptionException):
-            inbound.decrypt(eve_outbound.encrypt("Test"))
+            inbound.decrypt(eve_outbound.encrypt(b"Test"))
 
     def test_id(self):
         outbound = GroupSession()

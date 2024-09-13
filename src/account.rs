@@ -1,9 +1,13 @@
 use std::collections::HashMap;
 
-use pyo3::{prelude::*, types::PyType};
+use pyo3::{
+    prelude::*,
+    types::{PyBytes, PyType},
+};
 use vodozemac::olm::SessionConfig;
 
 use crate::{
+    convert_to_pybytes,
     error::{LibolmPickleError, PickleError, SessionError},
     types::{Curve25519PublicKey, Ed25519PublicKey, Ed25519Signature, PreKeyMessage},
 };
@@ -70,7 +74,7 @@ impl Account {
         self.inner.curve25519_key().into()
     }
 
-    fn sign(&self, message: &str) -> Ed25519Signature {
+    fn sign(&self, message: &[u8]) -> Ed25519Signature {
         self.inner.sign(message).into()
     }
 
@@ -127,7 +131,7 @@ impl Account {
         &mut self,
         identity_key: &Curve25519PublicKey,
         message: &PreKeyMessage,
-    ) -> Result<(Session, String), SessionError> {
+    ) -> Result<(Session, Py<PyBytes>), SessionError> {
         let result = self
             .inner
             .create_inbound_session(identity_key.inner, &message.inner)?;
@@ -136,7 +140,7 @@ impl Account {
             Session {
                 inner: result.session,
             },
-            String::from_utf8(result.plaintext)?,
+            convert_to_pybytes(result.plaintext.as_slice()),
         ))
     }
 }

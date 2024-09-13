@@ -6,7 +6,7 @@ mod session;
 mod types;
 
 use error::*;
-use pyo3::prelude::*;
+use pyo3::{prelude::*, types::PyBytes};
 
 #[pymodule(name = "vodozemac")]
 fn my_module(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
@@ -57,4 +57,8 @@ fn my_module(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     )?;
 
     Ok(())
+}
+
+pub(crate) fn convert_to_pybytes(bytes: &[u8]) -> Py<PyBytes> {
+    Python::with_gil(|py| PyBytes::new_bound(py, bytes).into())
 }
