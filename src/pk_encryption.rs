@@ -90,7 +90,7 @@ impl PkDecryption {
         self.inner
             .decrypt(&message)
             .map(|vec| Python::with_gil(|py| PyBytes::new_bound(py, vec.as_slice()).into()))
-            .map_err(|e| PkEncryptionError::Decode(e))
+            .map_err(PkEncryptionError::Decode)
     }
 }
 
