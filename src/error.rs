@@ -140,6 +140,8 @@ impl From<PickleError> for PyErr {
     }
 }
 
+/// An error type describing failures which can happen during the use of `PkEncryption`
+/// and `PkDecryption` objects.
 #[derive(Debug, Error)]
 pub enum PkEncryptionError {
     #[error("The key doesn't have the correct size, got {0}, expected 32 bytes")]

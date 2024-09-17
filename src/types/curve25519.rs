@@ -57,6 +57,7 @@ impl Curve25519PublicKey {
     }
 }
 
+/// A Curve25519 secret key.
 #[pyclass]
 #[derive(Clone)]
 pub struct Curve25519SecretKey {
@@ -71,6 +72,7 @@ impl From<vodozemac::Curve25519SecretKey> for Curve25519SecretKey {
 
 #[pymethods]
 impl Curve25519SecretKey {
+    /// Generate a new, random, Curve25519SecretKey.
     #[new]
     fn new() -> Self {
         Self {
@@ -78,6 +80,7 @@ impl Curve25519SecretKey {
         }
     }
 
+    /// Create a `Curve25519SecretKey` from the given base64-encoded string.
     #[classmethod]
     pub fn from_base64(_cls: &Bound<'_, PyType>, key: &str) -> Result<Self, KeyError> {
         Self::from_bytes(
@@ -88,6 +91,7 @@ impl Curve25519SecretKey {
         )
     }
 
+    /// Create a `Curve25519SecretKey` from the given byte array.
     #[classmethod]
     pub fn from_bytes(_cls: &Bound<'_, PyType>, bytes: &[u8]) -> Result<Self, KeyError> {
         let key: &[u8; 32] = bytes.try_into().map_err(|_| {
@@ -103,24 +107,20 @@ impl Curve25519SecretKey {
         })
     }
 
+    /// Convert the `Curve25519SecretKey` to a base64-encoded string.
     pub fn to_base64(&self) -> String {
         base64_encode(self.inner.to_bytes().as_slice())
     }
 
+    /// Convert the `Curve25519SecretKey` to a byte array.
     pub fn to_bytes(&self) -> Py<PyBytes> {
         convert_to_pybytes(self.inner.to_bytes().as_slice())
     }
 
+    /// Give the `Curve25519PublicKey` associated with this `Curve25519SecretKey`.
     pub fn public_key(&self) -> Curve25519PublicKey {
         Curve25519PublicKey {
             inner: vodozemac::Curve25519PublicKey::from(&self.inner),
         }
-    }
-
-    #[classattr]
-    const __hash__: Option<PyObject> = None;
-
-    fn __eq__(&self, other: &Self) -> bool {
-        self.inner.to_bytes() == other.inner.to_bytes()
     }
 }
