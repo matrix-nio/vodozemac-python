@@ -1,6 +1,6 @@
 [package]
 name = "vodozemac-python"
-version = "0.7.0"
+version = "0.8.1"
 edition = "2021"
 
 [lib]
@@ -9,12 +9,12 @@ crate-type = ["cdylib"]
 
 [dependencies]
 paste = "1.0.15"
-thiserror = "1.0.63"
-vodozemac = { git = "https://github.com/matrix-org/vodozemac.git", rev = "12f9036bf7f2536c172273602afcdc9aeddf8cf7", features = ["insecure-pk-encryption"] }
+thiserror = "2.0.3"
+vodozemac = { version = "0.8.1",  features = ["insecure-pk-encryption"] }
 
 [package.metadata.maturin]
 name = "vodozemac"
 
 [dependencies.pyo3]
-version = "0.22.2"
+version = "0.23.2"
 features = ["extension-module"]
