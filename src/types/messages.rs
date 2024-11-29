@@ -1,8 +1,9 @@
-use crate::{convert_to_pybytes, error::*};
 use pyo3::{
     prelude::*,
     types::{PyBytes, PyType},
 };
+
+use crate::{convert_to_pybytes, error::*};
 
 #[pyclass]
 pub struct AnyOlmMessage {
@@ -13,23 +14,17 @@ pub struct AnyOlmMessage {
 impl AnyOlmMessage {
     #[classmethod]
     pub fn pre_key(_cls: &Bound<'_, PyType>, message: &[u8]) -> Result<Self, SessionError> {
-        Ok(Self {
-            inner: vodozemac::olm::PreKeyMessage::from_bytes(message)?.into(),
-        })
+        Ok(Self { inner: vodozemac::olm::PreKeyMessage::from_bytes(message)?.into() })
     }
 
     #[classmethod]
     pub fn normal(_cls: &Bound<'_, PyType>, message: &[u8]) -> Result<Self, SessionError> {
-        Ok(Self {
-            inner: vodozemac::olm::Message::from_bytes(message)?.into(),
-        })
+        Ok(Self { inner: vodozemac::olm::Message::from_bytes(message)?.into() })
     }
 
     pub fn to_pre_key(&self) -> Option<PreKeyMessage> {
         if let vodozemac::olm::OlmMessage::PreKey(message) = &self.inner {
-            Some(PreKeyMessage {
-                inner: message.clone(),
-            })
+            Some(PreKeyMessage { inner: message.clone() })
         } else {
             None
         }
@@ -41,9 +36,7 @@ impl AnyOlmMessage {
         message_type: usize,
         ciphertext: &[u8],
     ) -> Result<Self, DecodeError> {
-        Ok(Self {
-            inner: vodozemac::olm::OlmMessage::from_parts(message_type, ciphertext)?,
-        })
+        Ok(Self { inner: vodozemac::olm::OlmMessage::from_parts(message_type, ciphertext)? })
     }
 
     pub fn to_parts(&self) -> (usize, Py<PyBytes>) {
@@ -61,15 +54,11 @@ pub struct PreKeyMessage {
 impl PreKeyMessage {
     #[classmethod]
     pub fn from_base64(_cls: &Bound<'_, PyType>, message: &str) -> Result<Self, DecodeError> {
-        Ok(Self {
-            inner: vodozemac::olm::PreKeyMessage::from_base64(message)?,
-        })
+        Ok(Self { inner: vodozemac::olm::PreKeyMessage::from_base64(message)? })
     }
 
     pub fn to_any(&self) -> AnyOlmMessage {
-        AnyOlmMessage {
-            inner: vodozemac::olm::OlmMessage::PreKey(self.inner.clone()),
-        }
+        AnyOlmMessage { inner: vodozemac::olm::OlmMessage::PreKey(self.inner.clone()) }
     }
 
     pub fn session_id(&self) -> String {
@@ -79,8 +68,6 @@ impl PreKeyMessage {
 
 impl From<PreKeyMessage> for AnyOlmMessage {
     fn from(value: PreKeyMessage) -> Self {
-        Self {
-            inner: vodozemac::olm::OlmMessage::PreKey(value.inner.clone()),
-        }
+        Self { inner: vodozemac::olm::OlmMessage::PreKey(value.inner.clone()) }
     }
 }

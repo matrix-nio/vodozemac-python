@@ -116,12 +116,12 @@ impl PkEncryption {
         Ok(Self { inner: vodozemac::pk_encryption::PkEncryption::from_key(key.inner) })
     }
 
-    /// Encrypt a plaintext for the recipient. Writes to the ciphertext, mac, and
-    /// ephemeral_key buffers, whose values should be sent to the recipient. mac is
-    /// a Message Authentication Code to ensure that the data is received and
-    /// decrypted properly. ephemeral_key is the public part of the ephemeral key
-    /// used (together with the recipient's key) to generate a symmetric encryption
-    /// key.
+    /// Encrypt a plaintext for the recipient. Writes to the ciphertext, mac,
+    /// and ephemeral_key buffers, whose values should be sent to the
+    /// recipient. mac is a Message Authentication Code to ensure that the
+    /// data is received and decrypted properly. ephemeral_key is the public
+    /// part of the ephemeral key used (together with the recipient's key)
+    /// to generate a symmetric encryption key.
     pub fn encrypt(&self, message: &[u8]) -> Message {
         let msg = self.inner.encrypt(message);
         Message {
