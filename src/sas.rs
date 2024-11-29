@@ -2,6 +2,10 @@ use pyo3::prelude::*;
 
 use crate::{error::SasError, types::Curve25519PublicKey};
 
+/// A class representing a short auth string verification object.
+///
+/// This object can be used to establish a shared secret to perform the short
+/// auth string based key verification.
 #[pyclass]
 pub struct Sas {
     inner: Option<vodozemac::sas::Sas>,
@@ -10,6 +14,10 @@ pub struct Sas {
 
 #[pymethods]
 impl Sas {
+    /// Create a new random verification object
+    ///
+    /// This creates an ephemeral Curve25519 keypair that can be used to
+    /// establish a shared secret.
     #[new]
     fn new() -> Self {
         let sas = vodozemac::sas::Sas::new();
@@ -18,11 +26,17 @@ impl Sas {
         Self { inner: Some(sas), public_key }
     }
 
+    /// The public key that can be used to establish a shared secret.
     #[getter]
     fn public_key(&self) -> Curve25519PublicKey {
         self.public_key.into()
     }
 
+    /// Establishes a SAS secret by performing a DH handshake with another
+    /// public key.
+    ///
+    /// Returns an [`EstablishedSas`] object which can be used to generate
+    /// [`SasBytes`] if the given public key was valid, otherwise `None`.
     fn diffie_hellman(&mut self, key: Curve25519PublicKey) -> Result<EstablishedSas, SasError> {
         if let Some(sas) = self.inner.take() {
             let sas = sas.diffie_hellman(key.inner)?;
@@ -34,6 +48,11 @@ impl Sas {
     }
 }
 
+/// A class representing a short auth string verification object where the
+/// shared secret has been established.
+///
+/// This object can be used to generate the short auth string and calculate and
+/// verify a MAC that protects information about the keys being verified.
 #[pyclass]
 pub struct EstablishedSas {
     inner: vodozemac::sas::EstablishedSas,
