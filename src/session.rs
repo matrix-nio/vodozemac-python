@@ -22,9 +22,8 @@ impl Session {
     }
 
     fn pickle(&self, pickle_key: &[u8]) -> Result<String, PickleError> {
-        let pickle_key: &[u8; 32] = pickle_key
-            .try_into()
-            .map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
+        let pickle_key: &[u8; 32] =
+            pickle_key.try_into().map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
 
         Ok(self.inner.pickle().encrypt(pickle_key))
     }
@@ -39,9 +38,8 @@ impl Session {
         pickle: &str,
         pickle_key: &[u8],
     ) -> Result<Self, PickleError> {
-        let pickle_key: &[u8; 32] = pickle_key
-            .try_into()
-            .map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
+        let pickle_key: &[u8; 32] =
+            pickle_key.try_into().map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
         let pickle = vodozemac::olm::SessionPickle::from_encrypted(pickle, pickle_key)?;
 
         let session = vodozemac::olm::Session::from_pickle(pickle);
@@ -66,8 +64,6 @@ impl Session {
     }
 
     fn decrypt(&mut self, message: &AnyOlmMessage) -> Result<Py<PyBytes>, SessionError> {
-        Ok(convert_to_pybytes(
-            self.inner.decrypt(&message.inner)?.as_slice(),
-        ))
+        Ok(convert_to_pybytes(self.inner.decrypt(&message.inner)?.as_slice()))
     }
 }

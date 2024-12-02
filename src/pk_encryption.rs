@@ -44,9 +44,7 @@ impl PkDecryption {
     /// Create a new random PkDecryption object.
     #[new]
     fn new() -> Self {
-        Self {
-            inner: vodozemac::pk_encryption::PkDecryption::new(),
-        }
+        Self { inner: vodozemac::pk_encryption::PkDecryption::new() }
     }
 
     /// Create a PkDecryption object from the secret key bytes.
@@ -55,9 +53,7 @@ impl PkDecryption {
         _cls: &Bound<'_, PyType>,
         key: Curve25519SecretKey,
     ) -> Result<Self, PkEncryptionError> {
-        Ok(Self {
-            inner: vodozemac::pk_encryption::PkDecryption::from_key(key.inner),
-        })
+        Ok(Self { inner: vodozemac::pk_encryption::PkDecryption::from_key(key.inner) })
     }
 
     /// The secret key used to decrypt messages.
@@ -89,7 +85,7 @@ impl PkDecryption {
 
         self.inner
             .decrypt(&message)
-            .map(|vec| Python::with_gil(|py| PyBytes::new_bound(py, vec.as_slice()).into()))
+            .map(|vec| Python::with_gil(|py| PyBytes::new(py, vec.as_slice()).into()))
             .map_err(PkEncryptionError::Decode)
     }
 }
@@ -117,17 +113,15 @@ impl PkEncryption {
         _cls: &Bound<'_, PyType>,
         key: Curve25519PublicKey,
     ) -> Result<Self, PkEncryptionError> {
-        Ok(Self {
-            inner: vodozemac::pk_encryption::PkEncryption::from_key(key.inner),
-        })
+        Ok(Self { inner: vodozemac::pk_encryption::PkEncryption::from_key(key.inner) })
     }
 
-    /// Encrypt a plaintext for the recipient. Writes to the ciphertext, mac, and
-    /// ephemeral_key buffers, whose values should be sent to the recipient. mac is
-    /// a Message Authentication Code to ensure that the data is received and
-    /// decrypted properly. ephemeral_key is the public part of the ephemeral key
-    /// used (together with the recipient's key) to generate a symmetric encryption
-    /// key.
+    /// Encrypt a plaintext for the recipient. Writes to the ciphertext, mac,
+    /// and ephemeral_key buffers, whose values should be sent to the
+    /// recipient. mac is a Message Authentication Code to ensure that the
+    /// data is received and decrypted properly. ephemeral_key is the public
+    /// part of the ephemeral key used (together with the recipient's key)
+    /// to generate a symmetric encryption key.
     pub fn encrypt(&self, message: &[u8]) -> Message {
         let msg = self.inner.encrypt(message);
         Message {

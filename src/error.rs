@@ -41,22 +41,10 @@ create_error!(vodozemac::megolm::SessionKeyDecodeError, SessionKeyDecode);
 create_error!(vodozemac::DecodeError, Decode);
 
 pyo3::create_exception!(module, PickleException, pyo3::exceptions::PyValueError);
-pyo3::create_exception!(
-    module,
-    SessionCreationException,
-    pyo3::exceptions::PyValueError
-);
+pyo3::create_exception!(module, SessionCreationException, pyo3::exceptions::PyValueError);
 pyo3::create_exception!(module, SasException, pyo3::exceptions::PyValueError);
-pyo3::create_exception!(
-    module,
-    OlmDecryptionException,
-    pyo3::exceptions::PyValueError
-);
-pyo3::create_exception!(
-    module,
-    MegolmDecryptionException,
-    pyo3::exceptions::PyValueError
-);
+pyo3::create_exception!(module, OlmDecryptionException, pyo3::exceptions::PyValueError);
+pyo3::create_exception!(module, MegolmDecryptionException, pyo3::exceptions::PyValueError);
 
 #[derive(Debug, Error)]
 pub enum MegolmDecryptionError {
@@ -140,8 +128,8 @@ impl From<PickleError> for PyErr {
     }
 }
 
-/// An error type describing failures which can happen during the use of `PkEncryption`
-/// and `PkDecryption` objects.
+/// An error type describing failures which can happen during the use of
+/// `PkEncryption` and `PkDecryption` objects.
 #[derive(Debug, Error)]
 pub enum PkEncryptionError {
     #[error("The key doesn't have the correct size, got {0}, expected 32 bytes")]
@@ -150,11 +138,7 @@ pub enum PkEncryptionError {
     Decode(#[from] vodozemac::pk_encryption::Error),
 }
 
-pyo3::create_exception!(
-    module,
-    PkInvalidKeySizeException,
-    pyo3::exceptions::PyValueError
-);
+pyo3::create_exception!(module, PkInvalidKeySizeException, pyo3::exceptions::PyValueError);
 pyo3::create_exception!(module, PkDecodeException, pyo3::exceptions::PyValueError);
 
 impl From<PkEncryptionError> for PyErr {
