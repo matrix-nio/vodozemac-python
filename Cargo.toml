@@ -2,6 +2,9 @@
 name = "vodozemac-python"
 version = "0.7.0"
 edition = "2021"
+repository = "https://github.com/matrix-nio/vodozemac-python"
+homepage = "https://github.com/matrix-nio/vodozemac-python"
+readme = "README.md"
 
 [lib]
 name = "vodozemac"
