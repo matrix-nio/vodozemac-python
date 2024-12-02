@@ -24,3 +24,6 @@ name = "vodozemac"
 [dependencies.pyo3]
 version = "0.22.2"
 features = ["extension-module"]
+
+[features]
+gil-refs = []
