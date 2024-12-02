@@ -10,7 +10,10 @@ crate-type = ["cdylib"]
 [dependencies]
 paste = "1.0.15"
 thiserror = "1.0.63"
-vodozemac = { git = "https://github.com/matrix-org/vodozemac.git", rev = "12f9036bf7f2536c172273602afcdc9aeddf8cf7", features = ["insecure-pk-encryption"] }
+[dependencies.vodozemac]
+git = "https://github.com/matrix-org/vodozemac.git"
+rev = "12f9036bf7f2536c172273602afcdc9aeddf8cf7"
+features = ["insecure-pk-encryption"]
 
 [package.metadata.maturin]
 name = "vodozemac"
