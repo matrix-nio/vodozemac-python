@@ -1,5 +1,6 @@
-use crate::error::*;
 use pyo3::{prelude::*, types::PyType};
+
+use crate::error::*;
 
 #[pyclass]
 pub struct Ed25519PublicKey {
@@ -10,9 +11,7 @@ pub struct Ed25519PublicKey {
 impl Ed25519PublicKey {
     #[classmethod]
     pub fn from_base64(_cls: &Bound<'_, PyType>, key: &str) -> Result<Self, KeyError> {
-        Ok(Self {
-            inner: vodozemac::Ed25519PublicKey::from_base64(key)?,
-        })
+        Ok(Self { inner: vodozemac::Ed25519PublicKey::from_base64(key)? })
     }
 
     pub fn to_base64(&self) -> String {
@@ -55,9 +54,7 @@ impl Ed25519Signature {
         _cls: &Bound<'_, PyType>,
         session_key: &str,
     ) -> Result<Self, SignatureError> {
-        Ok(Self {
-            inner: vodozemac::Ed25519Signature::from_base64(session_key)?,
-        })
+        Ok(Self { inner: vodozemac::Ed25519Signature::from_base64(session_key)? })
     }
 
     pub fn to_base64(&self) -> String {

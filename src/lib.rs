@@ -33,46 +33,22 @@ fn my_module(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<pk_encryption::PkEncryption>()?;
     m.add_class::<pk_encryption::Message>()?;
 
-    m.add("KeyException", py.get_type_bound::<KeyException>())?;
-    m.add(
-        "SignatureException",
-        py.get_type_bound::<SignatureException>(),
-    )?;
-    m.add("DecodeException", py.get_type_bound::<DecodeException>())?;
-    m.add(
-        "LibolmPickleException",
-        py.get_type_bound::<LibolmPickleException>(),
-    )?;
-    m.add(
-        "SessionKeyDecodeException",
-        py.get_type_bound::<SessionKeyDecodeException>(),
-    )?;
-    m.add("PickleException", py.get_type_bound::<PickleException>())?;
-    m.add(
-        "SessionCreationException",
-        py.get_type_bound::<SessionCreationException>(),
-    )?;
-    m.add("SasException", py.get_type_bound::<SasException>())?;
-    m.add(
-        "OlmDecryptionException",
-        py.get_type_bound::<OlmDecryptionException>(),
-    )?;
-    m.add(
-        "MegolmDecryptionException",
-        py.get_type_bound::<MegolmDecryptionException>(),
-    )?;
-    m.add(
-        "PkInvalidKeySizeException",
-        py.get_type_bound::<PkInvalidKeySizeException>(),
-    )?;
-    m.add(
-        "PkDecodeException",
-        py.get_type_bound::<PkDecodeException>(),
-    )?;
+    m.add("KeyException", py.get_type::<KeyException>())?;
+    m.add("SignatureException", py.get_type::<SignatureException>())?;
+    m.add("DecodeException", py.get_type::<DecodeException>())?;
+    m.add("LibolmPickleException", py.get_type::<LibolmPickleException>())?;
+    m.add("SessionKeyDecodeException", py.get_type::<SessionKeyDecodeException>())?;
+    m.add("PickleException", py.get_type::<PickleException>())?;
+    m.add("SessionCreationException", py.get_type::<SessionCreationException>())?;
+    m.add("SasException", py.get_type::<SasException>())?;
+    m.add("OlmDecryptionException", py.get_type::<OlmDecryptionException>())?;
+    m.add("MegolmDecryptionException", py.get_type::<MegolmDecryptionException>())?;
+    m.add("PkInvalidKeySizeException", py.get_type::<PkInvalidKeySizeException>())?;
+    m.add("PkDecodeException", py.get_type::<PkDecodeException>())?;
 
     Ok(())
 }
 
 pub(crate) fn convert_to_pybytes(bytes: &[u8]) -> Py<PyBytes> {
-    Python::with_gil(|py| PyBytes::new_bound(py, bytes).into())
+    Python::with_gil(|py| PyBytes::new(py, bytes).into())
 }

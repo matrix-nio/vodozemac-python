@@ -19,9 +19,7 @@ pub struct GroupSession {
 impl GroupSession {
     #[new]
     fn new() -> Self {
-        Self {
-            inner: vodozemac::megolm::GroupSession::new(SessionConfig::version_1()),
-        }
+        Self { inner: vodozemac::megolm::GroupSession::new(SessionConfig::version_1()) }
     }
 
     #[getter]
@@ -44,9 +42,8 @@ impl GroupSession {
     }
 
     fn pickle(&self, pickle_key: &[u8]) -> Result<String, PickleError> {
-        let pickle_key: &[u8; 32] = pickle_key
-            .try_into()
-            .map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
+        let pickle_key: &[u8; 32] =
+            pickle_key.try_into().map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
 
         Ok(self.inner.pickle().encrypt(pickle_key))
     }
@@ -57,9 +54,8 @@ impl GroupSession {
         pickle: &str,
         pickle_key: &[u8],
     ) -> Result<Self, PickleError> {
-        let pickle_key: &[u8; 32] = pickle_key
-            .try_into()
-            .map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
+        let pickle_key: &[u8; 32] =
+            pickle_key.try_into().map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
         let pickle = vodozemac::megolm::GroupSessionPickle::from_encrypted(pickle, pickle_key)?;
 
         let session = vodozemac::megolm::GroupSession::from_pickle(pickle);
@@ -78,10 +74,7 @@ pub struct DecryptedMessage {
 
 impl DecryptedMessage {
     fn new(plaintext: &[u8], message_index: u32) -> Self {
-        DecryptedMessage {
-            plaintext: convert_to_pybytes(plaintext),
-            message_index,
-        }
+        DecryptedMessage { plaintext: convert_to_pybytes(plaintext), message_index }
     }
 }
 
@@ -135,16 +128,12 @@ impl InboundGroupSession {
     ) -> Result<DecryptedMessage, MegolmDecryptionError> {
         let ret = self.inner.decrypt(&message.inner)?;
 
-        Ok(DecryptedMessage::new(
-            ret.plaintext.as_slice(),
-            ret.message_index,
-        ))
+        Ok(DecryptedMessage::new(ret.plaintext.as_slice(), ret.message_index))
     }
 
     fn pickle(&self, pickle_key: &[u8]) -> Result<String, PickleError> {
-        let pickle_key: &[u8; 32] = pickle_key
-            .try_into()
-            .map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
+        let pickle_key: &[u8; 32] =
+            pickle_key.try_into().map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
 
         Ok(self.inner.pickle().encrypt(pickle_key))
     }
@@ -155,9 +144,8 @@ impl InboundGroupSession {
         pickle: &str,
         pickle_key: &[u8],
     ) -> Result<Self, PickleError> {
-        let pickle_key: &[u8; 32] = pickle_key
-            .try_into()
-            .map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
+        let pickle_key: &[u8; 32] =
+            pickle_key.try_into().map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
         let pickle =
             vodozemac::megolm::InboundGroupSessionPickle::from_encrypted(pickle, pickle_key)?;
 

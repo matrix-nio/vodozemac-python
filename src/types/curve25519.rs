@@ -1,9 +1,10 @@
-use crate::{convert_to_pybytes, error::*};
 use pyo3::{
     prelude::*,
     types::{PyBytes, PyType},
 };
 use vodozemac::{base64_decode, base64_encode};
+
+use crate::{convert_to_pybytes, error::*};
 
 #[pyclass]
 #[derive(Clone)]
@@ -21,9 +22,7 @@ impl From<vodozemac::Curve25519PublicKey> for Curve25519PublicKey {
 impl Curve25519PublicKey {
     #[classmethod]
     pub fn from_base64(_cls: &Bound<'_, PyType>, key: &str) -> Result<Self, KeyError> {
-        Ok(Self {
-            inner: vodozemac::Curve25519PublicKey::from_base64(key)?,
-        })
+        Ok(Self { inner: vodozemac::Curve25519PublicKey::from_base64(key)? })
     }
 
     #[classmethod]
@@ -36,9 +35,7 @@ impl Curve25519PublicKey {
             })
         })?;
 
-        Ok(Self {
-            inner: vodozemac::Curve25519PublicKey::from_slice(key)?,
-        })
+        Ok(Self { inner: vodozemac::Curve25519PublicKey::from_slice(key)? })
     }
 
     pub fn to_base64(&self) -> String {
@@ -75,9 +72,7 @@ impl Curve25519SecretKey {
     /// Generate a new, random, Curve25519SecretKey.
     #[new]
     fn new() -> Self {
-        Self {
-            inner: vodozemac::Curve25519SecretKey::new(),
-        }
+        Self { inner: vodozemac::Curve25519SecretKey::new() }
     }
 
     /// Create a `Curve25519SecretKey` from the given base64-encoded string.
@@ -102,9 +97,7 @@ impl Curve25519SecretKey {
             })
         })?;
 
-        Ok(Self {
-            inner: vodozemac::Curve25519SecretKey::from_slice(key),
-        })
+        Ok(Self { inner: vodozemac::Curve25519SecretKey::from_slice(key) })
     }
 
     /// Convert the `Curve25519SecretKey` to a base64-encoded string.
@@ -117,10 +110,9 @@ impl Curve25519SecretKey {
         convert_to_pybytes(self.inner.to_bytes().as_slice())
     }
 
-    /// Give the `Curve25519PublicKey` associated with this `Curve25519SecretKey`.
+    /// Give the `Curve25519PublicKey` associated with this
+    /// `Curve25519SecretKey`.
     pub fn public_key(&self) -> Curve25519PublicKey {
-        Curve25519PublicKey {
-            inner: vodozemac::Curve25519PublicKey::from(&self.inner),
-        }
+        Curve25519PublicKey { inner: vodozemac::Curve25519PublicKey::from(&self.inner) }
     }
 }

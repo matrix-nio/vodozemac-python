@@ -6,13 +6,12 @@ use pyo3::{
 };
 use vodozemac::olm::SessionConfig;
 
+use super::session::Session;
 use crate::{
     convert_to_pybytes,
     error::{LibolmPickleError, PickleError, SessionError},
     types::{Curve25519PublicKey, Ed25519PublicKey, Ed25519Signature, PreKeyMessage},
 };
-
-use super::session::Session;
 
 #[pyclass]
 pub struct Account {
@@ -23,9 +22,7 @@ pub struct Account {
 impl Account {
     #[new]
     fn new() -> Self {
-        Self {
-            inner: vodozemac::olm::Account::new(),
-        }
+        Self { inner: vodozemac::olm::Account::new() }
     }
 
     #[classmethod]
@@ -34,9 +31,8 @@ impl Account {
         pickle: &str,
         pickle_key: &[u8],
     ) -> Result<Self, PickleError> {
-        let pickle_key: &[u8; 32] = pickle_key
-            .try_into()
-            .map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
+        let pickle_key: &[u8; 32] =
+            pickle_key.try_into().map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
 
         let pickle = vodozemac::olm::AccountPickle::from_encrypted(pickle, pickle_key)?;
 
@@ -57,9 +53,8 @@ impl Account {
     }
 
     fn pickle(&self, pickle_key: &[u8]) -> Result<String, PickleError> {
-        let pickle_key: &[u8; 32] = pickle_key
-            .try_into()
-            .map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
+        let pickle_key: &[u8; 32] =
+            pickle_key.try_into().map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
 
         Ok(self.inner.pickle().encrypt(pickle_key))
     }
@@ -80,11 +75,7 @@ impl Account {
 
     #[getter]
     fn one_time_keys(&self) -> HashMap<String, Curve25519PublicKey> {
-        self.inner
-            .one_time_keys()
-            .into_iter()
-            .map(|(k, v)| (k.to_base64(), v.into()))
-            .collect()
+        self.inner.one_time_keys().into_iter().map(|(k, v)| (k.to_base64(), v.into())).collect()
     }
 
     #[getter]
@@ -98,11 +89,7 @@ impl Account {
 
     #[getter]
     fn fallback_key(&self) -> HashMap<String, Curve25519PublicKey> {
-        self.inner
-            .fallback_key()
-            .into_iter()
-            .map(|(k, v)| (k.to_base64(), v.into()))
-            .collect()
+        self.inner.fallback_key().into_iter().map(|(k, v)| (k.to_base64(), v.into())).collect()
     }
 
     fn generate_fallback_key(&mut self) {
@@ -132,15 +119,8 @@ impl Account {
         identity_key: &Curve25519PublicKey,
         message: &PreKeyMessage,
     ) -> Result<(Session, Py<PyBytes>), SessionError> {
-        let result = self
-            .inner
-            .create_inbound_session(identity_key.inner, &message.inner)?;
+        let result = self.inner.create_inbound_session(identity_key.inner, &message.inner)?;
 
-        Ok((
-            Session {
-                inner: result.session,
-            },
-            convert_to_pybytes(result.plaintext.as_slice()),
-        ))
+        Ok((Session { inner: result.session }, convert_to_pybytes(result.plaintext.as_slice())))
     }
 }

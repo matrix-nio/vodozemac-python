@@ -15,10 +15,7 @@ impl Sas {
         let sas = vodozemac::sas::Sas::new();
         let public_key = sas.public_key();
 
-        Self {
-            inner: Some(sas),
-            public_key,
-        }
+        Self { inner: Some(sas), public_key }
     }
 
     #[getter]
