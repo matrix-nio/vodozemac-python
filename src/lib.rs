@@ -9,6 +9,18 @@ mod types;
 use error::*;
 use pyo3::{prelude::*, types::PyBytes};
 
+/// A Rust implementation of Olm and Megolm
+///
+/// vodozemac is a Rust reimplementation of [libolm](https://gitlab.matrix.org/matrix-org/olm), a
+/// cryptographic library used for end-to-end encryption in [Matrix](https://matrix.org). At its
+/// core, it is an implementation of the Olm and Megolm cryptographic ratchets,
+/// along with a high-level API to easily establish cryptographic communication
+/// channels employing those ratchets with other parties. It also implements
+/// some other miscellaneous cryptographic functionality which is useful for
+/// building Matrix clients, such as [SAS][sas].
+///
+/// [sas]:
+/// <https://spec.matrix.org/v1.2/client-server-api/#short-authentication-string-sas-verification>
 #[pymodule(name = "vodozemac")]
 fn my_module(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<account::Account>()?;
