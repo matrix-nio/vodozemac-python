@@ -27,6 +27,18 @@ pub struct Message {
     ephemeral_key: Vec<u8>,
 }
 
+#[pymethods]
+impl Message {
+    #[new]
+    fn new(ciphertext: Vec<u8>, mac: Vec<u8>, ephemeral_key: Vec<u8>) -> Self {
+        Message {
+            ciphertext,
+            mac,
+            ephemeral_key,
+        }
+    }
+}
+
 /// ☣️  Compat support for libolm's PkDecryption.
 ///
 /// This implements the `m.megolm_backup.v1.curve25519-aes-sha2` described in
