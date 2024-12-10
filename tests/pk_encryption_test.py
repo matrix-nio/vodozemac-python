@@ -1,9 +1,16 @@
 import importlib
 import pytest
 
-from vodozemac import Curve25519SecretKey, Curve25519PublicKey, PkEncryption, PkDecryption, PkDecodeException
+from vodozemac import (
+    Curve25519SecretKey,
+    Curve25519PublicKey,
+    PkEncryption,
+    PkDecryption,
+    PkDecodeException,
+)
 
 CLEARTEXT = b"test"
+
 
 class TestClass(object):
     def test_encrypt_decrypt(self):
@@ -28,3 +35,14 @@ class TestClass(object):
 
         decoded = d.decrypt(e.encrypt(CLEARTEXT))
         assert decoded == CLEARTEXT
+
+    def test_encrypt_message_attr(self):
+        """Test that the Message object has accessible Python attributes (mac, ciphertext, ephemeral_key)."""
+        decryption = PkDecryption()
+        encryption = PkEncryption.from_key(decryption.public_key)
+
+        message = encryption.encrypt(CLEARTEXT)
+
+        assert message.mac is not None
+        assert message.ciphertext is not None
+        assert message.ephemeral_key is not None

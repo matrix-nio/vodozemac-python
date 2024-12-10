@@ -13,14 +13,17 @@ use crate::{
 #[pyclass]
 pub struct Message {
     /// The ciphertext of the message.
+    #[pyo3(get)]
     ciphertext: Vec<u8>,
     /// The message authentication code of the message.
     ///
     /// *Warning*: As stated in the module description, this does not
     /// authenticate the message.
+    #[pyo3(get)]
     mac: Vec<u8>,
     /// The ephemeral Curve25519PublicKey of the message which was used to
     /// derive the individual message key.
+    #[pyo3(get)]
     ephemeral_key: Vec<u8>,
 }
 
