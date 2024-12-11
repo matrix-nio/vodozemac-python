@@ -31,11 +31,7 @@ pub struct Message {
 impl Message {
     #[new]
     fn new(ciphertext: Vec<u8>, mac: Vec<u8>, ephemeral_key: Vec<u8>) -> Self {
-        Message {
-            ciphertext,
-            mac,
-            ephemeral_key,
-        }
+        Message { ciphertext, mac, ephemeral_key }
     }
 }
 
