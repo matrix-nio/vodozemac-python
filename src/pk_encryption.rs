@@ -1,7 +1,12 @@
 use pyo3::{
-    pyclass, pymethods,
-    types::{PyBytes, PyType},
-    Bound, Py, Python,
+    pyclass,
+    pymethods,
+    types::{PyBytes, PyString, PyType},
+    Bound,
+    IntoPyObject,
+    Py,
+    PyResult,
+    Python,
 };
 
 use crate::{
@@ -41,6 +46,53 @@ impl Message {
     #[new]
     fn new(ciphertext: Vec<u8>, mac: Vec<u8>, ephemeral_key: Vec<u8>) -> Self {
         Message { ciphertext, mac, ephemeral_key }
+    }
+
+    /// Create a new Message object from unpadded Base64-encoded components.
+    ///
+    /// This function decodes the given Base64 strings and returns a `Message`
+    /// with the resulting byte vectors.
+    ///
+    /// # Arguments
+    /// * `ciphertext` - Unpadded Base64-encoded ciphertext
+    /// * `mac` - Unpadded Base64-encoded message authentication code
+    /// * `ephemeral_key` - Unpadded Base64-encoded ephemeral key
+    #[classmethod]
+    fn from_base64(
+        _cls: &Bound<'_, PyType>,
+        ciphertext: &str,
+        mac: &str,
+        ephemeral_key: &str,
+    ) -> Self {
+        let decoded_ciphertext =
+            vodozemac::base64_decode(ciphertext).expect("Failed to decode ciphertext");
+        let decoded_mac = vodozemac::base64_decode(mac).expect("Failed to decode mac");
+        let decoded_ephemeral_key =
+            vodozemac::base64_decode(ephemeral_key).expect("Failed to decode ephemeral_key");
+
+        Self {
+            ciphertext: decoded_ciphertext,
+            mac: decoded_mac,
+            ephemeral_key: decoded_ephemeral_key,
+        }
+    }
+
+    /// Convert the message components to unpadded Base64-encoded strings.
+    ///
+    /// Returns a tuple of (ciphertext, mac, ephemeral_key) as unpadded Base64 strings.
+    fn to_base64<'py>(
+        &self,
+        py: Python<'py>,
+    ) -> PyResult<(Bound<'py, PyString>, Bound<'py, PyString>, Bound<'py, PyString>)> {
+        let ciphertext_b64 = vodozemac::base64_encode(&self.ciphertext);
+        let mac_b64 = vodozemac::base64_encode(&self.mac);
+        let ephemeral_key_b64 = vodozemac::base64_encode(&self.ephemeral_key);
+
+        Ok((
+            ephemeral_key_b64.into_pyobject(py)?,
+            mac_b64.into_pyobject(py)?,
+            ciphertext_b64.into_pyobject(py)?,
+        ))
     }
 }
 
