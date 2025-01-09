@@ -56,15 +56,10 @@ class TestClass(object):
         olm_encrypts = olm.pk.PkEncryption(vodo_decryption.public_key.to_base64())
         olm_msg = olm_encrypts.encrypt(CLEARTEXT)
 
-        # Convert the Olm message into a Vodo message structure.
-        def pad_base64_decode(b64_str: str) -> bytes:
-            """Add the required number of '=' padding to make the length a multiple of 4, then Base64 decode."""
-            return base64.b64decode(b64_str + "=" * ((4 - len(b64_str) % 4) % 4))
-
-        vodo_msg = Message(
-            pad_base64_decode(olm_msg.ciphertext),
-            pad_base64_decode(olm_msg.mac),
-            pad_base64_decode(olm_msg.ephemeral_key),
+        vodo_msg = Message.from_base64(
+            olm_msg.ciphertext,
+            olm_msg.mac,
+            olm_msg.ephemeral_key,
         )
 
         # Decrypt the message with Vodo
@@ -79,15 +74,12 @@ class TestClass(object):
         vodo_encryption = PkEncryption.from_key(public_key)
         vodo_msg = vodo_encryption.encrypt(CLEARTEXT)
 
-        # Convert the Vodo message into an Olm message structure
-        def unpad_base64_encode(vodo_bytes: bytes) -> str:
-            """Base64 encode the given bytes and remove trailing '=' padding."""
-            return base64.b64encode(vodo_bytes).decode("utf-8").rstrip("=")
-
+        ephemeral_key_b64, mac_b64, ciphertext_b64 = vodo_msg.to_base64()
+        
         olm_msg = olm.pk.PkMessage(
-            unpad_base64_encode(vodo_msg.ephemeral_key),
-            unpad_base64_encode(vodo_msg.mac),
-            unpad_base64_encode(vodo_msg.ciphertext),
+            ephemeral_key_b64,
+            mac_b64,
+            ciphertext_b64
         )
 
         # Decrypt the message with Olm
