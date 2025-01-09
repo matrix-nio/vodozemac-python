@@ -29,6 +29,15 @@ pub struct Message {
 
 #[pymethods]
 impl Message {
+    /// Create a new Message object from its components.
+    ///
+    /// This constructor creates a Message object that represents an encrypted message
+    /// using the `m.megolm_backup.v1.curve25519-aes-sha2` algorithm.
+    ///
+    /// # Arguments
+    /// * `ciphertext` - The encrypted content of the message
+    /// * `mac` - The message authentication code
+    /// * `ephemeral_key` - The ephemeral public key used during encryption
     #[new]
     fn new(ciphertext: Vec<u8>, mac: Vec<u8>, ephemeral_key: Vec<u8>) -> Self {
         Message { ciphertext, mac, ephemeral_key }
