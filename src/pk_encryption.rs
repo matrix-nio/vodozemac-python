@@ -1,12 +1,7 @@
 use pyo3::{
-    pyclass,
-    pymethods,
+    pyclass, pymethods,
     types::{PyBytes, PyString, PyType},
-    Bound,
-    IntoPyObject,
-    Py,
-    PyResult,
-    Python,
+    Bound, IntoPyObject, Py, PyResult, Python,
 };
 
 use crate::{
