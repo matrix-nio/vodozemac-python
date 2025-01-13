@@ -31,8 +31,9 @@ pub struct Message {
 impl Message {
     /// Create a new Message object from its components.
     ///
-    /// This constructor creates a Message object that represents an encrypted message
-    /// using the `m.megolm_backup.v1.curve25519-aes-sha2` algorithm.
+    /// This constructor creates a Message object that represents an encrypted
+    /// message using the `m.megolm_backup.v1.curve25519-aes-sha2`
+    /// algorithm.
     ///
     /// # Arguments
     /// * `ciphertext` - The encrypted content of the message
@@ -72,7 +73,8 @@ impl Message {
 
     /// Convert the message components to unpadded Base64-encoded strings.
     ///
-    /// Returns a tuple of (ciphertext, mac, ephemeral_key) as unpadded Base64 strings.
+    /// Returns a tuple of (ciphertext, mac, ephemeral_key) as unpadded Base64
+    /// strings.
     fn to_base64(&self) -> PyResult<(String, String, String)> {
         let ciphertext_b64 = vodozemac::base64_encode(&self.ciphertext);
         let mac_b64 = vodozemac::base64_encode(&self.mac);
