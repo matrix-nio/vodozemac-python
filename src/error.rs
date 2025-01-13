@@ -150,7 +150,7 @@ impl From<PkEncryptionError> for PyErr {
                 PkInvalidKeySizeException::new_err(e.to_string())
             }
             PkEncryptionError::Decode(_) => PkDecodeException::new_err(e.to_string()),
-            PkEncryptionError::Mac(_) => PkDecodeException::new_err(e.to_string())
+            PkEncryptionError::Mac(_) => PkDecodeException::new_err(e.to_string()),
         }
     }
 }
