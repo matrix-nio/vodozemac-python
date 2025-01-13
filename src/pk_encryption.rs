@@ -1,7 +1,7 @@
 use pyo3::{
     pyclass, pymethods,
-    types::{PyBytes, PyString, PyType},
-    Bound, IntoPyObject, Py, PyResult, Python,
+    types::{PyBytes, PyType},
+    Bound, Py, PyResult, Python,
 };
 
 use crate::{
@@ -75,19 +75,12 @@ impl Message {
     /// Convert the message components to unpadded Base64-encoded strings.
     ///
     /// Returns a tuple of (ciphertext, mac, ephemeral_key) as unpadded Base64 strings.
-    fn to_base64<'py>(
-        &self,
-        py: Python<'py>,
-    ) -> PyResult<(Bound<'py, PyString>, Bound<'py, PyString>, Bound<'py, PyString>)> {
+    fn to_base64(&self) -> PyResult<(String, String, String)> {
         let ciphertext_b64 = vodozemac::base64_encode(&self.ciphertext);
         let mac_b64 = vodozemac::base64_encode(&self.mac);
         let ephemeral_key_b64 = vodozemac::base64_encode(&self.ephemeral_key);
 
-        Ok((
-            ephemeral_key_b64.into_pyobject(py)?,
-            mac_b64.into_pyobject(py)?,
-            ciphertext_b64.into_pyobject(py)?,
-        ))
+        Ok((ephemeral_key_b64, mac_b64, ciphertext_b64))
     }
 }
 
