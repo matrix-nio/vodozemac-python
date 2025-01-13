@@ -58,18 +58,16 @@ impl Message {
         ciphertext: &str,
         mac: &str,
         ephemeral_key: &str,
-    ) -> Self {
-        let decoded_ciphertext =
-            vodozemac::base64_decode(ciphertext).expect("Failed to decode ciphertext");
-        let decoded_mac = vodozemac::base64_decode(mac).expect("Failed to decode mac");
-        let decoded_ephemeral_key =
-            vodozemac::base64_decode(ephemeral_key).expect("Failed to decode ephemeral_key");
-
-        Self {
+    ) -> Result<Self, PkEncryptionError> {
+        let decoded_ciphertext = vodozemac::base64_decode(ciphertext)?;
+        let decoded_mac = vodozemac::base64_decode(mac)?;
+        let decoded_ephemeral_key = vodozemac::base64_decode(ephemeral_key)?;
+    
+        Ok(Self {
             ciphertext: decoded_ciphertext,
             mac: decoded_mac,
             ephemeral_key: decoded_ephemeral_key,
-        }
+        })
     }
 
     /// Convert the message components to unpadded Base64-encoded strings.

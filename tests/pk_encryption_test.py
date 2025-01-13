@@ -85,3 +85,30 @@ class TestClass(object):
         # Decrypt the message with Olm
         decrypted_plaintext = olm_decryption.decrypt(olm_msg)
         assert decrypted_plaintext.encode("utf-8") == CLEARTEXT
+
+
+    def test_message_from_invalid_base64(self):
+        """Test that invalid base64 input raises PkDecodeException."""
+        # Test invalid ciphertext    
+        with pytest.raises(PkDecodeException, match="Invalid symbol"):
+            Message.from_base64(
+                "not-valid-base64!@#",  # Invalid base64 for ciphertext
+                base64.b64encode(b"some_mac").decode(),  # Valid base64
+                base64.b64encode(b"some_key").decode()   # Valid base64
+            )
+
+        # Test invalid mac
+        with pytest.raises(PkDecodeException, match="Invalid symbol"):
+            Message.from_base64(
+                base64.b64encode(b"some_text").decode(),
+                "not-valid-base64!@#",  # Invalid base64 for mac
+                base64.b64encode(b"some_key").decode()
+            )
+
+        # Test invalid ephemeral key
+        with pytest.raises(PkDecodeException, match="Invalid symbol"):
+            Message.from_base64(
+                base64.b64encode(b"some_text").decode(),
+                base64.b64encode(b"some_mac").decode(),
+                "not-valid-base64!@#"  # Invalid base64 for ephemeral key
+            )
