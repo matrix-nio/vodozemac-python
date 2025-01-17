@@ -1,7 +1,7 @@
 use pyo3::{
     pyclass, pymethods,
     types::{PyBytes, PyType},
-    Bound, Py, PyResult, Python,
+    Bound, Py, Python,
 };
 
 use crate::{
@@ -75,7 +75,7 @@ impl Message {
     ///
     /// Returns a tuple of (ciphertext, mac, ephemeral_key) as unpadded Base64
     /// strings.
-    fn to_base64(&self) -> PyResult<(String, String, String)> {
+    fn to_base64(&self) -> Result<(String, String, String), PkEncryptionError> {
         let ciphertext_b64 = vodozemac::base64_encode(&self.ciphertext);
         let mac_b64 = vodozemac::base64_encode(&self.mac);
         let ephemeral_key_b64 = vodozemac::base64_encode(&self.ephemeral_key);
