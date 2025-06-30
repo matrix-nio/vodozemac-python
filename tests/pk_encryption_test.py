@@ -1,9 +1,17 @@
-import importlib
-import pytest
+import base64
 
-from vodozemac import Curve25519SecretKey, Curve25519PublicKey, PkEncryption, PkDecryption, PkDecodeException
+import pytest
+from vodozemac import (
+    Curve25519PublicKey,
+    Curve25519SecretKey,
+    Message,
+    PkDecodeException,
+    PkDecryption,
+    PkEncryption,
+)
 
 CLEARTEXT = b"test"
+
 
 class TestClass(object):
     def test_encrypt_decrypt(self):
@@ -28,3 +36,41 @@ class TestClass(object):
 
         decoded = d.decrypt(e.encrypt(CLEARTEXT))
         assert decoded == CLEARTEXT
+
+    def test_encrypt_message_attr(self):
+        """Test that the Message object has accessible Python attributes (mac, ciphertext, ephemeral_key)."""
+        decryption = PkDecryption()
+        encryption = PkEncryption.from_key(decryption.public_key)
+
+        message = encryption.encrypt(CLEARTEXT)
+
+        assert message.mac is not None
+        assert message.ciphertext is not None
+        assert message.ephemeral_key is not None
+
+
+    def test_message_from_invalid_base64(self):
+        """Test that invalid base64 input raises PkDecodeException."""
+        # Test invalid ciphertext    
+        with pytest.raises(PkDecodeException, match="Invalid symbol"):
+            Message.from_base64(
+                "not-valid-base64!@#",  # Invalid base64 for ciphertext
+                base64.b64encode(b"some_mac").decode(),  # Valid base64
+                base64.b64encode(b"some_key").decode()   # Valid base64
+            )
+
+        # Test invalid mac
+        with pytest.raises(PkDecodeException, match="Invalid symbol"):
+            Message.from_base64(
+                base64.b64encode(b"some_text").decode(),
+                "not-valid-base64!@#",  # Invalid base64 for mac
+                base64.b64encode(b"some_key").decode()
+            )
+
+        # Test invalid ephemeral key
+        with pytest.raises(PkDecodeException, match="Invalid symbol"):
+            Message.from_base64(
+                base64.b64encode(b"some_text").decode(),
+                base64.b64encode(b"some_mac").decode(),
+                "not-valid-base64!@#"  # Invalid base64 for ephemeral key
+            )

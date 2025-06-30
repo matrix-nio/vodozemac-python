@@ -13,15 +13,75 @@ use crate::{
 #[pyclass]
 pub struct Message {
     /// The ciphertext of the message.
+    #[pyo3(get)]
     ciphertext: Vec<u8>,
     /// The message authentication code of the message.
     ///
     /// *Warning*: As stated in the module description, this does not
     /// authenticate the message.
+    #[pyo3(get)]
     mac: Vec<u8>,
     /// The ephemeral Curve25519PublicKey of the message which was used to
     /// derive the individual message key.
+    #[pyo3(get)]
     ephemeral_key: Vec<u8>,
+}
+
+#[pymethods]
+impl Message {
+    /// Create a new Message object from its components.
+    ///
+    /// This constructor creates a Message object that represents an encrypted
+    /// message using the `m.megolm_backup.v1.curve25519-aes-sha2`
+    /// algorithm.
+    ///
+    /// # Arguments
+    /// * `ciphertext` - The encrypted content of the message
+    /// * `mac` - The message authentication code
+    /// * `ephemeral_key` - The ephemeral public key used during encryption
+    #[new]
+    fn new(ciphertext: Vec<u8>, mac: Vec<u8>, ephemeral_key: Vec<u8>) -> Self {
+        Message { ciphertext, mac, ephemeral_key }
+    }
+
+    /// Create a new Message object from unpadded Base64-encoded components.
+    ///
+    /// This function decodes the given Base64 strings and returns a `Message`
+    /// with the resulting byte vectors.
+    ///
+    /// # Arguments
+    /// * `ciphertext` - Unpadded Base64-encoded ciphertext
+    /// * `mac` - Unpadded Base64-encoded message authentication code
+    /// * `ephemeral_key` - Unpadded Base64-encoded ephemeral key
+    #[classmethod]
+    fn from_base64(
+        _cls: &Bound<'_, PyType>,
+        ciphertext: &str,
+        mac: &str,
+        ephemeral_key: &str,
+    ) -> Result<Self, PkEncryptionError> {
+        let decoded_ciphertext = vodozemac::base64_decode(ciphertext)?;
+        let decoded_mac = vodozemac::base64_decode(mac)?;
+        let decoded_ephemeral_key = vodozemac::base64_decode(ephemeral_key)?;
+
+        Ok(Self {
+            ciphertext: decoded_ciphertext,
+            mac: decoded_mac,
+            ephemeral_key: decoded_ephemeral_key,
+        })
+    }
+
+    /// Convert the message components to unpadded Base64-encoded strings.
+    ///
+    /// Returns a tuple of (ciphertext, mac, ephemeral_key) as unpadded Base64
+    /// strings.
+    fn to_base64(&self) -> Result<(String, String, String), PkEncryptionError> {
+        let ciphertext_b64 = vodozemac::base64_encode(&self.ciphertext);
+        let mac_b64 = vodozemac::base64_encode(&self.mac);
+        let ephemeral_key_b64 = vodozemac::base64_encode(&self.ephemeral_key);
+
+        Ok((ephemeral_key_b64, mac_b64, ciphertext_b64))
+    }
 }
 
 /// ☣️  Compat support for libolm's PkDecryption.
