@@ -1,5 +1,5 @@
 [build-system]
-requires = ["maturin>=1.7.0,<1.8.0"]
+requires = ["maturin>=1.9.0,<1.10.0"]
 build-backend = "maturin"
 
 [tool.maturin]
@@ -11,6 +11,21 @@ name = "vodozemac"
 description = "Python bindings for vodozemac"
 readme = "README.md"
 license = {file = "LICENSE"}
+requires-python = ">=3.9"
+dynamic = ["version"]
 
 [project.urls]
 repository = "https://github.com/matrix-nio/vodozemac-python"
+
+[dependency-groups]
+dev = [
+    {include-group = "nox"},
+    {include-group = "tests"},
+]
+nox = [
+    "nox-uv>=0.6.0",
+]
+tests = [
+    "maturin>=1.9.0",
+    "pytest>=8.4.1",
+]
