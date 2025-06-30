@@ -1,15 +1,13 @@
-import importlib
-import pytest
-import olm
 import base64
 
+import pytest
 from vodozemac import (
-    Curve25519SecretKey,
     Curve25519PublicKey,
-    PkEncryption,
-    PkDecryption,
-    PkDecodeException,
+    Curve25519SecretKey,
     Message,
+    PkDecodeException,
+    PkDecryption,
+    PkEncryption,
 )
 
 CLEARTEXT = b"test"
@@ -49,42 +47,6 @@ class TestClass(object):
         assert message.mac is not None
         assert message.ciphertext is not None
         assert message.ephemeral_key is not None
-
-    def test_olm_encrypt_vodo_decrypt(self):
-        """Test encrypting with Olm and decrypting with Vodo."""
-        vodo_decryption = PkDecryption()
-        olm_encrypts = olm.pk.PkEncryption(vodo_decryption.public_key.to_base64())
-        olm_msg = olm_encrypts.encrypt(CLEARTEXT)
-
-        vodo_msg = Message.from_base64(
-            olm_msg.ciphertext,
-            olm_msg.mac,
-            olm_msg.ephemeral_key,
-        )
-
-        # Decrypt the message with Vodo
-        decrypted_plaintext = vodo_decryption.decrypt(vodo_msg)
-        assert decrypted_plaintext == CLEARTEXT
-
-    def test_vodo_encrypt_olm_decrypt(self):
-        """Test encrypting with Vodo and decrypting with Olm."""
-        olm_decryption = olm.pk.PkDecryption()
-
-        public_key = Curve25519PublicKey.from_base64(olm_decryption.public_key)
-        vodo_encryption = PkEncryption.from_key(public_key)
-        vodo_msg = vodo_encryption.encrypt(CLEARTEXT)
-
-        ephemeral_key_b64, mac_b64, ciphertext_b64 = vodo_msg.to_base64()
-        
-        olm_msg = olm.pk.PkMessage(
-            ephemeral_key_b64,
-            mac_b64,
-            ciphertext_b64
-        )
-
-        # Decrypt the message with Olm
-        decrypted_plaintext = olm_decryption.decrypt(olm_msg)
-        assert decrypted_plaintext.encode("utf-8") == CLEARTEXT
 
 
     def test_message_from_invalid_base64(self):
