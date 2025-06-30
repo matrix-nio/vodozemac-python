@@ -34,4 +34,5 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - run: uv run --only-group nox nox
+      - name: nox
+        run: uv run --only-group nox nox -p 3.13
