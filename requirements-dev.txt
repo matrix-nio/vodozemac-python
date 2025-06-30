@@ -1,3 +1,0 @@
-maturin
-pytest>=4.0
-python-olm==3.2.16
