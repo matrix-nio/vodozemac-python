@@ -1,6 +1,4 @@
-import vodozemac
 import pytest
-
 from vodozemac import Account, PickleException, SignatureException
 
 PICKLE_KEY = b"DEFAULT_PICKLE_KEY_1234567890___"

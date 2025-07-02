@@ -1,30 +1,41 @@
-import importlib
 import pytest
+from hypothesis import given
+from vodozemac import (
+    Curve25519PublicKey,
+    Curve25519SecretKey,
+    PkDecodeException,
+    PkDecryption,
+    PkEncryption,
+)
 
-from vodozemac import Curve25519SecretKey, Curve25519PublicKey, PkEncryption, PkDecryption, PkDecodeException
 
-CLEARTEXT = b"test"
+@pytest.fixture(scope="module")
+def pk_decryption() -> PkDecryption:
+    return PkDecryption()
 
-class TestClass(object):
-    def test_encrypt_decrypt(self):
-        d = PkDecryption()
-        e = PkEncryption.from_key(d.public_key)
+@pytest.fixture(scope="module")
+def pk_encryption(pk_decryption: PkDecryption) -> PkEncryption:
+    return PkEncryption.from_key(pk_decryption.public_key)
 
-        decoded = d.decrypt(e.encrypt(CLEARTEXT))
-        assert decoded == CLEARTEXT
+@pytest.fixture(scope="module")
+def secret_key() -> Curve25519SecretKey:
+    return Curve25519SecretKey()
 
-    def test_encrypt_decrypt_with_wrong_key(self):
-        wrong_e = PkEncryption.from_key(PkDecryption().public_key)
-        with pytest.raises(PkDecodeException, match="MAC tag mismatch"):
-            PkDecryption().decrypt(wrong_e.encrypt(CLEARTEXT))
+@given(cleartext=...)
+def test_round_trip(pk_decryption: PkDecryption, pk_encryption: PkEncryption, cleartext: bytes):
+    assert cleartext == pk_decryption.decrypt(pk_encryption.encrypt(cleartext))
 
-    def test_encrypt_decrypt_with_serialized_keys(self):
-        secret_key = Curve25519SecretKey()
-        secret_key_bytes = secret_key.to_bytes()
-        public_key_bytes = secret_key.public_key().to_bytes()
+@given(cleartext=...)
+def test_wrong_key(pk_decryption: PkDecryption, pk_encryption: PkEncryption, cleartext: bytes):
+    with pytest.raises(PkDecodeException, match="MAC tag mismatch"):
+        PkDecryption().decrypt(pk_encryption.encrypt(cleartext))
 
-        d = PkDecryption.from_key(Curve25519SecretKey.from_bytes(secret_key_bytes))
-        e = PkEncryption.from_key(Curve25519PublicKey.from_bytes(public_key_bytes))
+@given(cleartext=...)
+def test_serialized_keys(secret_key: Curve25519SecretKey, cleartext: bytes):
+    secret_key_bytes = secret_key.to_bytes()
+    public_key_bytes = secret_key.public_key().to_bytes()
 
-        decoded = d.decrypt(e.encrypt(CLEARTEXT))
-        assert decoded == CLEARTEXT
+    d = PkDecryption.from_key(Curve25519SecretKey.from_bytes(secret_key_bytes))
+    e = PkEncryption.from_key(Curve25519PublicKey.from_bytes(public_key_bytes))
+
+    assert cleartext == d.decrypt(e.encrypt(cleartext))
