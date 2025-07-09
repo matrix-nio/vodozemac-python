@@ -1,114 +1,80 @@
 import pytest
-
+from hypothesis import given
 from vodozemac import (
-    InboundGroupSession,
     GroupSession,
-    PickleException,
-    DecodeException,
+    InboundGroupSession,
     MegolmDecryptionException,
+    PickleException,
 )
 
-PICKLE_KEY = b"DEFAULT_PICKLE_KEY_1234567890___"
+def test_create(group_session: GroupSession, inbound_group_session: InboundGroupSession):
+    assert isinstance(group_session.session_id, str)
+    assert isinstance(group_session.message_index, int)
+    assert group_session.message_index == 0
+
+    assert isinstance(inbound_group_session.first_known_index, int)
+    assert inbound_group_session.first_known_index == 0
+
+    assert group_session.session_id == inbound_group_session.session_id
+
+def test_outbound_pickle(group_session: GroupSession, pickle_key: bytes):
+    pickle = group_session.pickle(pickle_key)
+    unpickled = GroupSession.from_pickle(pickle, pickle_key)
+
+    assert group_session.session_id == unpickled.session_id
+
+def test_outbound_pickle_fail(group_session: GroupSession, pickle_key: bytes):
+    wrong_pickle_key = b"It's a secret to everybody 12345"
+    pickle = group_session.pickle(wrong_pickle_key)
+
+    with pytest.raises(ValueError):
+        GroupSession.from_pickle(pickle, pickle_key)
+
+@pytest.mark.parametrize("cls", (GroupSession, InboundGroupSession))
+def test_invalid_pickle(cls: type, pickle_key: bytes):
+    with pytest.raises(PickleException):
+        cls.from_pickle("", pickle_key)
 
 
-class TestClass(object):
-    def test_session_create(self):
-        GroupSession()
+def test_inbound_create(inbound_group_session: InboundGroupSession, pickle_key: bytes):
+    pickle = inbound_group_session.pickle(pickle_key)
+    unpickled = InboundGroupSession.from_pickle(pickle, pickle_key)
+    assert unpickled.session_id == inbound_group_session.session_id
 
-    def test_session_id(self):
-        session = GroupSession()
-        assert isinstance(session.session_id, str)
+@given(message1=..., message2=...)
+def test_encrypt_twice(group_session: GroupSession, inbound_group_session: InboundGroupSession, message1: bytes, message2: bytes):
+    decrypted1 = inbound_group_session.decrypt(group_session.encrypt(message1))
+    assert decrypted1.plaintext == message1
 
-    def test_session_index(self):
-        session = GroupSession()
-        assert isinstance(session.message_index, int)
-        assert session.message_index == 0
+    decrypted2 = inbound_group_session.decrypt(group_session.encrypt(message2))
+    assert decrypted2.plaintext == message2
 
-    def test_outbound_pickle(self):
-        session = GroupSession()
-        pickle = session.pickle(PICKLE_KEY)
-        unpickled = GroupSession.from_pickle(pickle, PICKLE_KEY)
+    assert decrypted2.message_index == decrypted1.message_index + 1
 
-        assert session.session_id == unpickled.session_id
+def test_decrypt_failure(inbound_group_session: InboundGroupSession):
+    wrong_group_session = GroupSession()
+    with pytest.raises(MegolmDecryptionException):
+        inbound_group_session.decrypt(wrong_group_session.encrypt(b"Test"))
 
-    def test_invalid_unpickle(self):
-        with pytest.raises(PickleException):
-            GroupSession.from_pickle("", PICKLE_KEY)
 
-        with pytest.raises(PickleException):
-            InboundGroupSession.from_pickle("", PICKLE_KEY)
-
-    def test_inbound_create(self):
-        outbound = GroupSession()
-        InboundGroupSession(outbound.session_key)
-
-    def test_inbound_pickle(self):
-        outbound = GroupSession()
-        inbound = InboundGroupSession(outbound.session_key)
-        pickle = inbound.pickle(PICKLE_KEY)
-        InboundGroupSession.from_pickle(pickle, PICKLE_KEY)
-
-    def test_inbound_export(self):
-        outbound = GroupSession()
-        inbound = InboundGroupSession(outbound.session_key)
-        imported = InboundGroupSession.import_session(
-            inbound.export_at(inbound.first_known_index)
+@given(message=...)
+def test_inbound_export(group_session: GroupSession, inbound_group_session: InboundGroupSession, message: bytes):
+    imported = InboundGroupSession.import_session(
+        session_key=inbound_group_session.export_at(
+            index=inbound_group_session.first_known_index
         )
-        message = imported.decrypt(outbound.encrypt(b"Test"))
-        assert message.plaintext == b"Test"
-        assert message.message_index == 0
+    )
+    index = group_session.message_index
+    decrypted = imported.decrypt(group_session.encrypt(message))
 
-    def test_first_index(self):
-        outbound = GroupSession()
-        inbound = InboundGroupSession(outbound.session_key)
-        index = inbound.first_known_index
-        assert index == 0
-        assert isinstance(index, int)
+    assert decrypted.plaintext == message
+    assert decrypted.message_index == index
 
-    def test_encrypt(self):
-        outbound = GroupSession()
-        inbound = InboundGroupSession(outbound.session_key)
-        message = inbound.decrypt(outbound.encrypt(b"Test"))
-        assert b"Test", 0 == inbound.decrypt(outbound.encrypt(b"Test"))
+def test_outbound_clear():
+    session = GroupSession()
+    del session
 
-    def test_decrypt_twice(self):
-        outbound = GroupSession()
-        inbound = InboundGroupSession(outbound.session_key)
-        outbound.encrypt(b"Test 1")
-        message = inbound.decrypt(outbound.encrypt(b"Test 2"))
-        assert isinstance(message.message_index, int)
-        assert message.message_index == 1
-        assert message.plaintext == b"Test 2"
-
-    def test_decrypt_failure(self):
-        outbound = GroupSession()
-        inbound = InboundGroupSession(outbound.session_key)
-        eve_outbound = GroupSession()
-        with pytest.raises(MegolmDecryptionException):
-            inbound.decrypt(eve_outbound.encrypt(b"Test"))
-
-    def test_id(self):
-        outbound = GroupSession()
-        inbound = InboundGroupSession(outbound.session_key)
-        assert outbound.session_id == inbound.session_id
-
-    def test_inbound_fail(self):
-        with pytest.raises(TypeError):
-            InboundGroupSession()
-
-    def test_outbound_pickle_fail(self):
-        outbound = GroupSession()
-        pickle_key = b"It's a secret to everybody 12345"
-        pickle = outbound.pickle(pickle_key)
-
-        with pytest.raises(ValueError):
-            GroupSession.from_pickle(pickle, PICKLE_KEY)
-
-    def test_outbound_clear(self):
-        session = GroupSession()
-        del session
-
-    def test_inbound_clear(self):
-        outbound = GroupSession()
-        inbound = InboundGroupSession(outbound.session_key)
-        del inbound
+def test_inbound_clear():
+    outbound = GroupSession()
+    inbound = InboundGroupSession(outbound.session_key)
+    del inbound

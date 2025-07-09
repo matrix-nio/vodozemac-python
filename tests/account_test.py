@@ -1,13 +1,7 @@
 import pytest
-from hypothesis import strategies as st, given
+from hypothesis import given
 from vodozemac import Account, PickleException, SignatureException, Ed25519PublicKey, Curve25519PublicKey
 
-PICKLE_KEY = b"DEFAULT_PICKLE_KEY_1234567890___"
-PICKLE_STRATEGY = st.binary(min_size=32, max_size=32)
-
-@pytest.fixture(scope="module")
-def account() -> Account:
-    return Account()
 
 def test_creation(account: Account):
     assert isinstance(account.ed25519_key, Ed25519PublicKey)
@@ -21,9 +15,9 @@ def test_generate_and_publish_one_time_keys(account: Account):
     account.mark_keys_as_published()
     assert not account.one_time_keys
 
-def test_pickling(account: Account):
-    pickle = account.pickle(PICKLE_KEY)
-    unpickled = Account.from_pickle(pickle, PICKLE_KEY)
+def test_pickling(account: Account, pickle_key: bytes):
+    pickle = account.pickle(pickle_key)
+    unpickled = Account.from_pickle(pickle, pickle_key)
     assert account.ed25519_key == unpickled.ed25519_key
     assert account.curve25519_key == unpickled.curve25519_key
     assert account.one_time_keys == unpickled.one_time_keys
@@ -40,9 +34,9 @@ def test_libolm_pickling():
 
     assert unpickled.ed25519_key.to_base64() == "MEQCwaTE/gcrHaxwv06WEVy5xDA30FboFzCAtYhzmoc"
 
-def test_invalid_pickle():
+def test_invalid_pickle(pickle_key: bytes):
     with pytest.raises(PickleException):
-        Account.from_pickle("", PICKLE_KEY)
+        Account.from_pickle("", pickle_key)
 
 @given(message=...)
 def test_signing(account: Account, message: bytes):
