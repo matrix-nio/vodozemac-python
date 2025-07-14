@@ -136,6 +136,8 @@ pub enum PkEncryptionError {
     InvalidKeySize(usize),
     #[error(transparent)]
     Decode(#[from] vodozemac::pk_encryption::Error),
+    #[error(transparent)]
+    Mac(#[from] vodozemac::Base64DecodeError),
 }
 
 pyo3::create_exception!(module, PkInvalidKeySizeException, pyo3::exceptions::PyValueError);
@@ -148,6 +150,7 @@ impl From<PkEncryptionError> for PyErr {
                 PkInvalidKeySizeException::new_err(e.to_string())
             }
             PkEncryptionError::Decode(_) => PkDecodeException::new_err(e.to_string()),
+            PkEncryptionError::Mac(_) => PkDecodeException::new_err(e.to_string()),
         }
     }
 }
