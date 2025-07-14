@@ -17,6 +17,7 @@ fn my_module(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<types::PreKeyMessage>()?;
 
     m.add_class::<sas::Sas>()?;
+    m.add_class::<sas::EstablishedSas>()?;
 
     m.add_class::<group_sessions::GroupSession>()?;
     m.add_class::<group_sessions::InboundGroupSession>()?;

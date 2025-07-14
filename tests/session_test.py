@@ -1,145 +1,115 @@
-import pytest
+from collections.abc import Generator
 
+import pytest
 from vodozemac import (
     Account,
     AnyOlmMessage,
     DecodeException,
     Session,
     PickleException,
-    KeyException,
+    PreKeyMessage
 )
 
-PICKLE_KEY = b"DEFAULT_PICKLE_KEY_1234567890___"
+@pytest.fixture(scope="module")
+def alice() -> Account:
+    return Account()
 
+@pytest.fixture(scope="module")
+def bob() -> Account:
+    return Account()
 
-class TestClass(object):
-    def _create_session(self):
-        alice = Account()
-        bob = Account()
-        bob.generate_one_time_keys(1)
+type SessionGenerator = Generator[Session]
 
-        identity_key = bob.curve25519_key
-        one_time_key = list(bob.one_time_keys.values())[0]
+@pytest.fixture
+def alice_session_gen(alice: Account, bob: Account) -> SessionGenerator:
+    def session_generator() -> SessionGenerator:
+        while True:
+            bob.generate_one_time_keys(1)
+            identity_key = bob.curve25519_key
+            one_time_key = next(iter(bob.one_time_keys.values()))
+            yield alice.create_outbound_session(identity_key, one_time_key)
+    return session_generator()
 
-        session = alice.create_outbound_session(identity_key, one_time_key)
+@pytest.fixture
+def alice_session(alice_session_gen: SessionGenerator) -> Session:
+    return next(alice_session_gen)
 
-        return alice, bob, session
+def test_create(alice_session_gen: SessionGenerator):
+    session1, session2 = next(alice_session_gen), next(alice_session_gen)
+    assert session1.session_id != session2.session_id
+    for session in (session1, session2):
+        assert isinstance(session, Session)
+        assert isinstance(session.session_id, str)
 
-    def test_session_create(self):
-        _, _, session_1 = self._create_session()
-        _, _, session_2 = self._create_session()
-        assert session_1
-        assert session_2
-        assert session_1.session_id != session_2.session_id
-        assert isinstance(session_1.session_id, str)
+def test_clear(alice_session: Session):
+    del alice_session
 
-    def test_session_clear(self):
-        _, _, session = self._create_session()
-        del session
+def test_pickle(alice_session: Session, pickle_key: bytes):
+    unpickled = Session.from_pickle(alice_session.pickle(pickle_key), pickle_key)
+    assert unpickled.session_id == alice_session.session_id
 
-    def test_session_pickle(self):
-        alice, bob, session = self._create_session()
-        unpickled = Session.from_pickle(session.pickle(PICKLE_KEY), PICKLE_KEY)
-        assert unpickled.session_id == session.session_id
+def test_wrong_pickle_key(alice_session: Session, pickle_key: bytes):
+    pickle = alice_session.pickle(pickle_key)
+    with pytest.raises(PickleException):
+        Session.from_pickle(pickle, b"Definitely wrong key")
 
-    def test_session_invalid_pickle(self):
-        with pytest.raises(PickleException):
-            Session.from_pickle("", PICKLE_KEY)
+def test_invalid_pickle(pickle_key: bytes):
+    with pytest.raises(PickleException):
+        Session.from_pickle("", pickle_key)
 
-    def test_wrong_passphrase_pickle(self):
-        alice, bob, session = self._create_session()
-        pickle_key = b"It's a secret to everybody 12345"
-        pickle = session.pickle(pickle_key)
+def test_two_messages(alice: Account, bob: Account, alice_session: Session):
+    alice_plaintext = b"It's a secret to everybody"
+    alice_message = alice_session.encrypt(alice_plaintext).to_pre_key()
 
-        with pytest.raises(PickleException):
-            Session.from_pickle(pickle, PICKLE_KEY)
+    assert isinstance(alice_message, PreKeyMessage)
 
-    def test_encrypt(self):
-        plaintext = b"It's a secret to everybody"
-        alice, bob, session = self._create_session()
-        message = session.encrypt(plaintext)
+    bob_session, alice_decrypted = bob.create_inbound_session(alice.curve25519_key, alice_message)
+    assert alice_plaintext == alice_decrypted
 
-        message = message.to_pre_key()
-        assert message != None
+    bob_plaintext = b"Grumble, Grumble"
+    bob_message = bob_session.encrypt(bob_plaintext)
 
-        (bob_session, decrypted) = bob.create_inbound_session(
-            alice.curve25519_key, message
-        )
-        assert plaintext == decrypted
+    assert bob_plaintext == alice_session.decrypt(bob_message)
 
-    def test_empty_message(self):
-        with pytest.raises(DecodeException):
-            AnyOlmMessage.from_parts(0, b"x")
+def test_empty_message():
+    with pytest.raises(DecodeException):
+        AnyOlmMessage.from_parts(0, b"x")
 
-    def test_two_messages(self):
-        plaintext = b"It's a secret to everybody"
-        alice, bob, session = self._create_session()
-        message = session.encrypt(plaintext)
-        message = message.to_pre_key()
+def test_matches(alice: Account, bob: Account, alice_session_gen: SessionGenerator):
+    alice_plaintext = b"It's a secret to everybody"
+    alice_session1, alice_session2 = next(alice_session_gen), next(alice_session_gen)
+    alice_message1 = alice_session1.encrypt(alice_plaintext).to_pre_key()
 
-        (bob_session, decrypted) = bob.create_inbound_session(
-            alice.curve25519_key, message
-        )
-        assert plaintext == decrypted
+    bob_session, alice_decrypted = bob.create_inbound_session(alice.curve25519_key, alice_message1)
+    assert alice_plaintext == alice_decrypted
 
-        bob_plaintext = b"Grumble, Grumble"
-        bob_message = bob_session.encrypt(bob_plaintext)
+    alice_message2 = alice_session2.encrypt(alice_plaintext).to_pre_key()
+    assert bob_session.session_matches(alice_message2) is False
 
-        assert bob_plaintext == session.decrypt(bob_message)
+def test_does_not_match(alice: Account, bob: Account, alice_session: Session):
+    alice_plaintext = b"It's a secret to everybody"
+    alice_message1 = alice_session.encrypt(alice_plaintext).to_pre_key()
 
-    def test_matches(self):
-        plaintext = b"It's a secret to everybody"
-        alice, bob, session = self._create_session()
-        message = session.encrypt(plaintext)
-        message = message.to_pre_key()
+    bob_session, alice_decrypted = bob.create_inbound_session(alice.curve25519_key, alice_message1)
+    assert alice_plaintext == alice_decrypted
 
-        (bob_session, decrypted) = bob.create_inbound_session(
-            alice.curve25519_key, message
-        )
-        assert plaintext == decrypted
+    alice_message2 = alice_session.encrypt(b"Hey! Listen!").to_pre_key()
+    assert bob_session.session_matches(alice_message2) is True
 
-        message2 = session.encrypt(b"Hey! Listen!")
-        message2 = message2.to_pre_key()
+def test_invalid(alice_session_gen: SessionGenerator):
+    session1, session2 = next(alice_session_gen), next(alice_session_gen)
+    message = session1.encrypt(b"It's a secret to everybody").to_pre_key()
 
-        assert bob_session.session_matches(message2) is True
+    assert not session2.session_matches(message)
 
-    def test_invalid(self):
-        alice, bob, session = self._create_session()
-        _, _, another_session = self._create_session()
+def test_message_to_parts(alice: Account, bob: Account, alice_session: Session):
+    alice_plaintext = b"It's a secret to everybody"
+    encrypted = alice_session.encrypt(alice_plaintext)
 
-        message = another_session.encrypt(b"It's a secret to everybody")
-        message = message.to_pre_key()
+    alice_message = encrypted.to_pre_key()
+    alice_message_from_parts = AnyOlmMessage.from_parts(*encrypted.to_parts()).to_pre_key()
 
-        assert not session.session_matches(message)
+    assert alice_message.session_id() == alice_message_from_parts.session_id()
 
-    def test_does_not_match(self):
-        plaintext = b"It's a secret to everybody"
-        alice, bob, session = self._create_session()
-        message = session.encrypt(plaintext)
-        message = message.to_pre_key()
-
-        (bob_session, decrypted) = bob.create_inbound_session(
-            alice.curve25519_key, message
-        )
-
-        _, _, new_session = self._create_session()
-
-        new_message = new_session.encrypt(plaintext)
-        new_message = new_message.to_pre_key()
-        assert bob_session.session_matches(new_message) is False
-
-    def test_message_to_parts(self):
-        plaintext = b"It's a secret to everybody"
-        alice, bob, session = self._create_session()
-        message = session.encrypt(plaintext)
-
-        (message_type, ciphertext) = message.to_parts()
-
-        message = AnyOlmMessage.from_parts(message_type, ciphertext)
-        message = message.to_pre_key()
-
-        (bob_session, decrypted) = bob.create_inbound_session(
-            alice.curve25519_key, message
-        )
-
-        assert plaintext == decrypted
+    bob_session, alice_decrypted = bob.create_inbound_session(alice.curve25519_key, alice_message)
+    assert alice_plaintext == alice_decrypted

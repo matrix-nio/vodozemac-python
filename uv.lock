@@ -85,6 +85,20 @@ wheels = [
 ]
 
 [[package]]
+name = "hypothesis"
+version = "6.135.21"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "attrs" },
+    { name = "exceptiongroup", marker = "python_full_version < '3.11'" },
+    { name = "sortedcontainers" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/4f/ca/987c8cd4bb248c1d03e0dbf2c67b174c32517ea3016adee1e927cc8e21b7/hypothesis-6.135.21.tar.gz", hash = "sha256:8f3d3dfc75248a6c0177310b083aaf4ab82fb46d7741b19cb39e2f46f5015fbb", size = 452871, upload-time = "2025-07-02T06:44:26.355Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d8/9b/092a5a1f47fc197ef3c5db0b5b6cfea51d9c5bbf4273b4e91ac21e4dc215/hypothesis-6.135.21-py3-none-any.whl", hash = "sha256:fe04ecc4c077da4f24f81ebf2bc0a07ada70a04d6466169b37bd4644044e25b8", size = 519592, upload-time = "2025-07-02T06:44:22.711Z" },
+]
+
+[[package]]
 name = "iniconfig"
 version = "2.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -201,6 +215,15 @@ wheels = [
 ]
 
 [[package]]
+name = "sortedcontainers"
+version = "2.4.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e8/c4/ba2f8066cceb6f23394729afe52f3bf7adec04bf9ed2c820b39e19299111/sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88", size = 30594, upload-time = "2021-05-16T22:03:42.897Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/32/46/9cb0e58b2deb7f82b84065f37f3bffeb12413f947f9388e4cac22c4621ce/sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0", size = 29575, upload-time = "2021-05-16T22:03:41.177Z" },
+]
+
+[[package]]
 name = "tomli"
 version = "2.2.1"
 source = { registry = "https://pypi.org/simple" }
@@ -268,6 +291,7 @@ source = { editable = "." }
 
 [package.dev-dependencies]
 dev = [
+    { name = "hypothesis" },
     { name = "maturin" },
     { name = "nox-uv" },
     { name = "pytest" },
@@ -276,6 +300,7 @@ nox = [
     { name = "nox-uv" },
 ]
 tests = [
+    { name = "hypothesis" },
     { name = "maturin" },
     { name = "pytest" },
 ]
@@ -284,12 +309,14 @@ tests = [
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "hypothesis", specifier = ">=6.135.21" },
     { name = "maturin", specifier = ">=1.9.0" },
     { name = "nox-uv", specifier = ">=0.6.0" },
     { name = "pytest", specifier = ">=8.4.1" },
 ]
 nox = [{ name = "nox-uv", specifier = ">=0.6.0" }]
 tests = [
+    { name = "hypothesis", specifier = ">=6.135.21" },
     { name = "maturin", specifier = ">=1.9.0" },
     { name = "pytest", specifier = ">=8.4.1" },
 ]
