@@ -1,54 +1,44 @@
-from typing import NamedTuple, Final
+from typing import Final
 
 import pytest
 from vodozemac import Sas, EstablishedSas
 from vodozemac.vodozemac import Curve25519PublicKey
 
-MESSAGE: Final[str] = "Test message"
 EXTRA_INFO: Final[str] = "extra_info"
 
-class SasPair(NamedTuple):
-    alice: Sas
-    bob: Sas
-
-class EstablishedSasPair(NamedTuple):
-    alice: EstablishedSas
-    bob: EstablishedSas
+@pytest.fixture
+def alice_sas() -> Sas:
+    return Sas()
 
 @pytest.fixture
-def sas_pair() -> SasPair:
-    return SasPair(alice=Sas(), bob=Sas())
+def bob_sas() -> Sas:
+    return Sas()
 
 @pytest.fixture
-def established_sas_pair(sas_pair: SasPair) -> EstablishedSasPair:
-    return EstablishedSasPair(
-        alice=sas_pair.alice.diffie_hellman(sas_pair.bob.public_key),
-        bob=sas_pair.bob.diffie_hellman(sas_pair.alice.public_key),
-    )
+def alice_established_sas(alice_sas: Sas, bob_sas: Sas) -> EstablishedSas:
+    return alice_sas.diffie_hellman(bob_sas.public_key)
 
-def test_creation(sas_pair: SasPair):
-    for sas in sas_pair:
-        assert isinstance(sas.public_key, Curve25519PublicKey)
+@pytest.fixture
+def bob_established_sas(alice_sas: Sas, bob_sas: Sas) -> EstablishedSas:
+    return bob_sas.diffie_hellman(alice_sas.public_key)
 
-def test_other_key_setting(established_sas_pair: EstablishedSasPair):
-    for sas in established_sas_pair:
-        assert isinstance(sas, EstablishedSas)
+def test_creation(alice_sas: Sas, alice_established_sas):
+    assert isinstance(alice_sas.public_key, Curve25519PublicKey)
+    assert isinstance(alice_established_sas, EstablishedSas)
 
-def test_bytes_generating(sas_pair: SasPair):
-    alice_bytes = sas_pair.alice.diffie_hellman(sas_pair.bob.public_key).bytes(info=EXTRA_INFO)
-    bob_bytes = sas_pair.bob.diffie_hellman(sas_pair.alice.public_key).bytes(info=EXTRA_INFO)
+def test_bytes_generating(alice_sas: Sas, bob_sas: Sas):
+    alice_bytes = alice_sas.diffie_hellman(bob_sas.public_key).bytes(info=EXTRA_INFO)
+    bob_bytes = bob_sas.diffie_hellman(alice_sas.public_key).bytes(info=EXTRA_INFO)
 
     assert alice_bytes.emoji_indices == bob_bytes.emoji_indices
     assert alice_bytes.decimals == bob_bytes.decimals
 
-def test_mac_generating(established_sas_pair: EstablishedSasPair):
-    alice_sas = established_sas_pair.alice
-    bob_sas = established_sas_pair.bob
+def test_mac_generating(alice_established_sas: EstablishedSas, bob_established_sas: EstablishedSas):
+    message = "Test message"
+    alice_mac = alice_established_sas.calculate_mac(message, EXTRA_INFO)
+    bob_mac = bob_established_sas.calculate_mac(message, EXTRA_INFO)
 
-    alice_mac = alice_sas.calculate_mac(MESSAGE, EXTRA_INFO)
-    bob_mac = bob_sas.calculate_mac(MESSAGE, EXTRA_INFO)
-
-    assert alice_sas.verify_mac(MESSAGE, EXTRA_INFO, bob_mac) is None
-    assert bob_sas.verify_mac(MESSAGE, EXTRA_INFO, alice_mac) is None
+    assert alice_established_sas.verify_mac(message, EXTRA_INFO, bob_mac) is None
+    assert bob_established_sas.verify_mac(message, EXTRA_INFO, alice_mac) is None
 
     assert alice_mac == bob_mac

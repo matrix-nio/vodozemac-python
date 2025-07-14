@@ -2,6 +2,9 @@ import pytest
 from hypothesis import given
 from vodozemac import Account, PickleException, SignatureException, Ed25519PublicKey, Curve25519PublicKey
 
+@pytest.fixture(scope="module")
+def account() -> Account:
+    return Account()
 
 def test_creation(account: Account):
     assert isinstance(account.ed25519_key, Ed25519PublicKey)

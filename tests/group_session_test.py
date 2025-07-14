@@ -7,6 +7,15 @@ from vodozemac import (
     PickleException,
 )
 
+@pytest.fixture(scope="module")
+def group_session() -> GroupSession:
+    return GroupSession()
+
+@pytest.fixture(scope="module")
+def inbound_group_session(group_session: GroupSession) -> InboundGroupSession:
+    return InboundGroupSession(group_session.session_key)
+
+
 def test_create(group_session: GroupSession, inbound_group_session: InboundGroupSession):
     assert isinstance(group_session.session_id, str)
     assert isinstance(group_session.message_index, int)
