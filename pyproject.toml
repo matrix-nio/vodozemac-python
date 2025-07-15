@@ -1,32 +1,40 @@
 [build-system]
-requires = ["maturin>=1.9.0,<1.10.0"]
 build-backend = "maturin"
 
-[tool.maturin]
-name = "vodozemac"
-bindings = "pyo3"
+requires = [ "maturin>=1.9,<1.10" ]
 
 [project]
 name = "vodozemac"
 description = "Python bindings for vodozemac"
 readme = "README.md"
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 requires-python = ">=3.9"
-dynamic = ["version"]
+classifiers = [
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
+dynamic = [ "version" ]
 
-[project.urls]
-repository = "https://github.com/matrix-nio/vodozemac-python"
+urls.repository = "https://github.com/matrix-nio/vodozemac-python"
 
 [dependency-groups]
 dev = [
-    {include-group = "nox"},
-    {include-group = "tests"},
+  { include-group = "nox" },
+  { include-group = "tests" },
 ]
 nox = [
-    "nox-uv>=0.6.0",
+  "nox-uv>=0.6",
 ]
 tests = [
-    "hypothesis>=6.135.21",
-    "maturin>=1.9.0",
-    "pytest>=8.4.1",
+  "hypothesis>=6.135.21",
+  "maturin>=1.9",
+  "pytest>=8.4.1",
 ]
+
+[tool.maturin]
+name = "vodozemac"
+bindings = "pyo3"
