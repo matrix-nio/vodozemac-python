@@ -38,3 +38,4 @@ tests = [
 [tool.maturin]
 name = "vodozemac"
 bindings = "pyo3"
+python-source = "."
