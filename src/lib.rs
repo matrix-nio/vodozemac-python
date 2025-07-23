@@ -10,6 +10,17 @@ use error::*;
 use pyo3::{prelude::*, types::PyBytes};
 
 #[pymodule(name = "vodozemac")]
+/// Python bindings for the vodozemac Rust library.
+/// 
+/// This library provides Python bindings for vodozemac, a pure Rust implementation
+/// of the Matrix cryptographic protocols including:
+/// - Olm (end-to-end encryption for 1:1 conversations)  
+/// - Megolm (end-to-end encryption for group conversations)
+/// - SAS (Short Authentication String) verification
+/// - Public key encryption (PK encryption) for key backup
+///
+/// All the classes and functions in this module are thread-safe and can be used
+/// in concurrent environments.
 fn my_module(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<account::Account>()?;
     m.add_class::<session::Session>()?;
