@@ -13,7 +13,7 @@ use crate::{
     types::{Curve25519PublicKey, Ed25519PublicKey, Ed25519Signature, PreKeyMessage},
 };
 
-#[pyclass]
+#[pyclass(subclass)]
 pub struct Account {
     inner: vodozemac::olm::Account,
 }
