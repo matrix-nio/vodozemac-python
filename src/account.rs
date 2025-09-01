@@ -25,12 +25,13 @@ impl Account {
         Self { inner: vodozemac::olm::Account::new() }
     }
 
+    #[new]
     #[classmethod]
-    fn from_pickle(
-        _cls: &Bound<'_, PyType>,
+    fn from_pickle<'p>(
+        cls: &'p PyType,
         pickle: &str,
         pickle_key: &[u8],
-    ) -> Result<Self, PickleError> {
+    ) -> PyResult<Self, PickleError> {
         let pickle_key: &[u8; 32] =
             pickle_key.try_into().map_err(|_| PickleError::InvalidKeySize(pickle_key.len()))?;
 
