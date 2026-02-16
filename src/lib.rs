@@ -62,5 +62,6 @@ fn my_module(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
 }
 
 pub(crate) fn convert_to_pybytes(bytes: &[u8]) -> Py<PyBytes> {
-    Python::with_gil(|py| PyBytes::new(py, bytes).into())
+    Python::try_attach(|py| PyBytes::new(py, bytes).into())
+        .expect("failed to attach to Python interpreter")
 }
