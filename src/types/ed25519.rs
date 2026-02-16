@@ -29,7 +29,7 @@ impl Ed25519PublicKey {
     }
 
     #[classattr]
-    const __hash__: Option<PyObject> = None;
+    const __hash__: Option<Py<PyAny>> = None;
 
     fn __eq__(&self, other: &Self) -> bool {
         self.inner == other.inner

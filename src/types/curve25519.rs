@@ -6,7 +6,7 @@ use vodozemac::{base64_decode, base64_encode};
 
 use crate::{convert_to_pybytes, error::*};
 
-#[pyclass]
+#[pyclass(from_py_object)]
 #[derive(Clone)]
 pub struct Curve25519PublicKey {
     pub(crate) inner: vodozemac::Curve25519PublicKey,
@@ -47,7 +47,7 @@ impl Curve25519PublicKey {
     }
 
     #[classattr]
-    const __hash__: Option<PyObject> = None;
+    const __hash__: Option<Py<PyAny>> = None;
 
     fn __eq__(&self, other: &Self) -> bool {
         self.inner == other.inner
@@ -55,7 +55,7 @@ impl Curve25519PublicKey {
 }
 
 /// A Curve25519 secret key.
-#[pyclass]
+#[pyclass(from_py_object)]
 #[derive(Clone)]
 pub struct Curve25519SecretKey {
     pub(crate) inner: vodozemac::Curve25519SecretKey,
