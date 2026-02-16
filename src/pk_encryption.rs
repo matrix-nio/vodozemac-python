@@ -145,7 +145,10 @@ impl PkDecryption {
 
         self.inner
             .decrypt(&message)
-            .map(|vec| Python::with_gil(|py| PyBytes::new(py, vec.as_slice()).into()))
+            .map(|vec| {
+                Python::try_attach(|py| PyBytes::new(py, vec.as_slice()).into())
+                    .expect("failed to attach to Python interpreter")
+            })
             .map_err(PkEncryptionError::Decode)
     }
 }

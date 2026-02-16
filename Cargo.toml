@@ -2,7 +2,7 @@
 name = "vodozemac-python"
 # If we need to publish a new version of vodozemac-python without changing the underlying version of vodozemac itself,
 # bump this using a version scheme like '0.9.0-1'; this will create a python package version '0.9.0.post1'
-version = "0.9.0-1"
+version = "0.9.0-2"
 edition = "2021"
 repository = "https://github.com/matrix-nio/vodozemac-python"
 homepage = "https://github.com/matrix-nio/vodozemac-python"
@@ -17,11 +17,11 @@ crate-type = ["cdylib"]
 
 [dependencies]
 paste = "1.0.15"
-thiserror = "2.0.3"
+thiserror = "2.0.18"
 [dependencies.vodozemac]
 version = "0.9.0"
 features = ["insecure-pk-encryption"]
 
 [dependencies.pyo3]
-version = "0.25.1"
+version = "0.28.1"
 features = ["extension-module"]

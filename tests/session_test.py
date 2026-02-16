@@ -1,4 +1,5 @@
 from collections.abc import Generator
+from typing import TypeAlias
 
 import pytest
 from vodozemac import (
@@ -10,6 +11,7 @@ from vodozemac import (
     PreKeyMessage
 )
 
+
 @pytest.fixture(scope="module")
 def alice() -> Account:
     return Account()
@@ -18,7 +20,7 @@ def alice() -> Account:
 def bob() -> Account:
     return Account()
 
-type SessionGenerator = Generator[Session]
+SessionGenerator: TypeAlias = Generator[Session]
 
 @pytest.fixture
 def alice_session_gen(alice: Account, bob: Account) -> SessionGenerator:
