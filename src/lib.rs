@@ -53,6 +53,7 @@ fn my_module(py: Python<'_>, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add("PickleException", py.get_type::<PickleException>())?;
     m.add("SessionCreationException", py.get_type::<SessionCreationException>())?;
     m.add("SasException", py.get_type::<SasException>())?;
+    m.add("OlmEncryptionException", py.get_type::<OlmEncryptionException>())?;
     m.add("OlmDecryptionException", py.get_type::<OlmDecryptionException>())?;
     m.add("MegolmDecryptionException", py.get_type::<MegolmDecryptionException>())?;
     m.add("PkInvalidKeySizeException", py.get_type::<PkInvalidKeySizeException>())?;

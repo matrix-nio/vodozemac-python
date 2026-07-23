@@ -104,14 +104,14 @@ impl Account {
         &self,
         identity_key: &Curve25519PublicKey,
         one_time_key: &Curve25519PublicKey,
-    ) -> Session {
+    ) -> Result<Session, SessionError> {
         let session = self.inner.create_outbound_session(
             SessionConfig::version_1(),
             identity_key.inner,
             one_time_key.inner,
-        );
+        )?;
 
-        Session { inner: session }
+        Ok(Session { inner: session })
     }
 
     fn create_inbound_session(
@@ -119,7 +119,11 @@ impl Account {
         identity_key: &Curve25519PublicKey,
         message: &PreKeyMessage,
     ) -> Result<(Session, Py<PyBytes>), SessionError> {
-        let result = self.inner.create_inbound_session(identity_key.inner, &message.inner)?;
+        let result = self.inner.create_inbound_session(
+            SessionConfig::version_1(),
+            identity_key.inner,
+            &message.inner,
+        )?;
 
         Ok((Session { inner: result.session }, convert_to_pybytes(result.plaintext.as_slice())))
     }
