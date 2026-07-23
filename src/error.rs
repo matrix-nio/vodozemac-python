@@ -43,6 +43,7 @@ create_error!(vodozemac::DecodeError, Decode);
 pyo3::create_exception!(module, PickleException, pyo3::exceptions::PyValueError);
 pyo3::create_exception!(module, SessionCreationException, pyo3::exceptions::PyValueError);
 pyo3::create_exception!(module, SasException, pyo3::exceptions::PyValueError);
+pyo3::create_exception!(module, OlmEncryptionException, pyo3::exceptions::PyValueError);
 pyo3::create_exception!(module, OlmDecryptionException, pyo3::exceptions::PyValueError);
 pyo3::create_exception!(module, MegolmDecryptionException, pyo3::exceptions::PyValueError);
 
@@ -97,6 +98,8 @@ pub enum SessionError {
     #[error(transparent)]
     Decryption(#[from] vodozemac::olm::DecryptionError),
     #[error(transparent)]
+    Encryption(#[from] vodozemac::olm::EncryptionError),
+    #[error(transparent)]
     Utf8(#[from] std::string::FromUtf8Error),
     #[error(transparent)]
     Creation(#[from] vodozemac::olm::SessionCreationError),
@@ -108,6 +111,7 @@ impl From<SessionError> for PyErr {
             SessionError::Key(e) => KeyException::new_err(e.to_string()),
             SessionError::Decode(e) => DecodeException::new_err(e.to_string()),
             SessionError::Decryption(e) => OlmDecryptionException::new_err(e.to_string()),
+            SessionError::Encryption(e) => OlmEncryptionException::new_err(e.to_string()),
             SessionError::Creation(e) => SessionCreationException::new_err(e.to_string()),
             SessionError::Utf8(e) => PyValueError::new_err(e.to_string()),
         }

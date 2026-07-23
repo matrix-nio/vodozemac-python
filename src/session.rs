@@ -58,9 +58,9 @@ impl Session {
         Ok(Self { inner: session })
     }
 
-    fn encrypt(&mut self, plaintext: &[u8]) -> AnyOlmMessage {
-        let message = self.inner.encrypt(plaintext);
-        AnyOlmMessage { inner: message }
+    fn encrypt(&mut self, plaintext: &[u8]) -> Result<AnyOlmMessage, SessionError> {
+        let message = self.inner.encrypt(plaintext)?;
+        Ok(AnyOlmMessage { inner: message })
     }
 
     fn decrypt(&mut self, message: &AnyOlmMessage) -> Result<Py<PyBytes>, SessionError> {
